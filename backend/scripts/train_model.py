@@ -9,13 +9,22 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import json
+
 import joblib
 import numpy as np
 from xgboost import XGBClassifier
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, StratifiedKFold
 
-from data.mock_tickets import MOCK_TICKETS, LABEL_MAP
+from data.mock_tickets import LABEL_MAP
 from pipeline.classifier import extract_features_from_dict, FEATURE_NAMES
+
+TICKETS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "tickets_100.ndjson")
+
+
+def load_tickets() -> list[dict]:
+    with open(TICKETS_PATH) as f:
+        return [json.loads(line) for line in f if line.strip()]
 
 
 def main():
@@ -23,8 +32,9 @@ def main():
     print("SOC Triage — XGBoost Classifier Training")
     print("=" * 60)
 
-    X = np.array([extract_features_from_dict(t) for t in MOCK_TICKETS])
-    y = np.array([LABEL_MAP[t["label"]] for t in MOCK_TICKETS])
+    tickets = load_tickets()
+    X = np.array([extract_features_from_dict(t) for t in tickets])
+    y = np.array([LABEL_MAP[t["label"]] for t in tickets])
 
     print(f"\nTraining samples : {len(X)}")
     print(f"Feature names    : {FEATURE_NAMES}")
@@ -43,11 +53,10 @@ def main():
         n_jobs=-1,
     )
 
-    # Cross-validation (leave-one-out for small dataset)
-    from sklearn.model_selection import LeaveOneOut
-    loo = LeaveOneOut()
-    scores = cross_val_score(model, X, y, cv=loo, scoring="accuracy")
-    print(f"\nLeave-One-Out CV accuracy: {scores.mean():.2%} ± {scores.std():.2%}")
+    # 5-fold stratified cross-validation
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy")
+    print(f"\n5-Fold CV accuracy: {scores.mean():.2%} ± {scores.std():.2%}")
 
     # Train on full dataset
     model.fit(X, y)

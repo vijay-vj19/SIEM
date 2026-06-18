@@ -36,8 +36,14 @@ if api_key:
     os.environ["OPENAI_API_KEY"] = api_key
 
 import json
-from data.mock_tickets import MOCK_TICKETS
 from pipeline.rag import ticket_to_text
+
+TICKETS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "tickets_100.ndjson")
+
+
+def load_tickets() -> list[dict]:
+    with open(TICKETS_PATH) as f:
+        return [json.loads(line) for line in f if line.strip()]
 
 
 def main():
@@ -65,8 +71,10 @@ def main():
         print("Run: pip install llama-index llama-index-vector-stores-supabase")
         sys.exit(1)
 
+    tickets = load_tickets()
+
     documents = []
-    for ticket in MOCK_TICKETS:
+    for ticket in tickets:
         content = ticket_to_text(ticket)
         doc = Document(
             text=content,
