@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>SOC Triage AI — Architecture</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#E2E8F0; display:flex; justify-content:center; padding:24px; min-height:100vh; }
+  .wrap { background:#fff; box-shadow:0 4px 32px rgba(0,0,0,0.16); border-radius:6px; overflow:hidden; }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg width="1500" height="974" viewBox="0 0 1500 974" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- down arrow -->
+  <marker id="da" markerWidth="10" markerHeight="8" refX="5" refY="8" orient="auto">
+    <polygon points="0,0 10,0 5,8" fill="#64748B"/>
+  </marker>
+  <!-- right arrow for pipeline -->
+  <marker id="ra" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0,0 9,3.5 0,7" fill="#9CA3AF"/>
+  </marker>
+  <!-- down arrow service connectors -->
+  <marker id="sa" markerWidth="9" markerHeight="7" refX="4.5" refY="0" orient="auto">
+    <polygon points="0,0 9,0 4.5,7" fill="#94A3B8"/>
+  </marker>
+</defs>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- BACKGROUND                                         -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect width="1500" height="974" fill="#FFFFFF"/>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TITLE BAR                                          -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="0" y="0" width="1500" height="50" fill="#0F172A"/>
+<rect x="0" y="47" width="1500" height="3" fill="#2563EB"/>
+<text x="28" y="31" font-family="'Segoe UI',Arial,sans-serif" font-size="17" font-weight="700" fill="#F1F5F9" letter-spacing="0.4">SOC Triage AI — System Architecture</text>
+<text x="28" y="44" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#64748B" letter-spacing="1.2">POC  ·  LEVEL-1 AUTONOMOUS SOC TRIAGE  ·  ML + RAG + LLM PIPELINE  ·  FastAPI + React + XGBoost + GPT-4o-mini</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 1: INPUT SOURCES  y=58                       -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="58" width="1464" height="108" fill="#FAFAFA" stroke="#9333EA" stroke-width="1.5" rx="6"/>
+<rect x="18" y="58" width="1464" height="26" fill="#7C3AED" rx="6"/>
+<rect x="18" y="72" width="1464" height="12" fill="#7C3AED"/>
+<text x="30" y="75" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" letter-spacing="1.3">INPUT SOURCES</text>
+
+<!-- Box: Excel Upload -->
+<rect x="170" y="90" width="318" height="70" fill="#F5F3FF" stroke="#9333EA" stroke-width="1.5" rx="5"/>
+<rect x="170" y="90" width="318" height="22" fill="#7C3AED" rx="4"/>
+<rect x="170" y="102" width="318" height="10" fill="#7C3AED"/>
+<text x="182" y="106" font-family="'Segoe UI',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#FFFFFF">Excel File Upload  (.xlsx / .xls)</text>
+<text x="182" y="123" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#4B5563">Drag-and-drop batch upload · react-dropzone · XLSX.js preview (first 5 rows)</text>
+<text x="182" y="137" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#6B7280">19 required columns · pandas read_excel() · column validation before pipeline</text>
+<text x="182" y="151" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#6B7280">Progress bar · toast notifications · per-row error reporting</text>
+
+<!-- Box: Single Ticket -->
+<rect x="560" y="90" width="380" height="70" fill="#F5F3FF" stroke="#9333EA" stroke-width="1.5" rx="5"/>
+<rect x="560" y="90" width="380" height="22" fill="#7C3AED" rx="4"/>
+<rect x="560" y="102" width="380" height="10" fill="#7C3AED"/>
+<text x="572" y="106" font-family="'Segoe UI',Arial,sans-serif" font-size="10.5" font-weight="700" fill="#FFFFFF">Single Ticket Form  (JSON POST)</text>
+<text x="572" y="123" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#4B5563">ticket_id · severity · rule_triggered · mitre_attack · user · user_type</text>
+<text x="572" y="137" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#6B7280">source_asset · source_ip · target_asset · target_ip · process</text>
+<text x="572" y="151" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" fill="#6B7280">command_line · decoded_command · hour_of_day · day_of_week · hist_tp/fp_count</text>
+
+<!-- ─── Arrow 1 ─── -->
+<line x1="750" y1="166" x2="750" y2="186" stroke="#64748B" stroke-width="1.8" marker-end="url(#da)"/>
+<rect x="662" y="171" width="176" height="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" rx="3"/>
+<text x="750" y="181" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#64748B" text-anchor="middle" letter-spacing="0.5">HTTP · Axios Client · REST</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 2: FRONTEND  y=190                           -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="190" width="1464" height="116" fill="#FAFAFA" stroke="#0891B2" stroke-width="1.5" rx="6"/>
+<rect x="18" y="190" width="1464" height="26" fill="#0891B2" rx="6"/>
+<rect x="18" y="204" width="1464" height="12" fill="#0891B2"/>
+<text x="30" y="207" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" letter-spacing="1.3">FRONTEND</text>
+<text x="115" y="207" font-family="'Segoe UI',Arial,sans-serif" font-size="9" fill="#BAE6FD" letter-spacing="0.8">React 18 + Vite + Tailwind CSS · Dark SOC Dashboard · localhost:5173</text>
+
+<!-- Component boxes: 6 equal, w=228, gap=10 -->
+<!-- Box 1: App.tsx -->
+<rect x="30" y="224" width="228" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="42" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">App.tsx</text>
+<text x="42" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Main dashboard shell</text>
+<text x="42" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Tab state management</text>
+<text x="42" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Summary cards (TP/FP/NR)</text>
+<text x="42" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">react-hot-toast alerts</text>
+
+<!-- Box 2: ExcelUpload -->
+<rect x="268" y="224" width="228" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="280" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">ExcelUpload.tsx</text>
+<text x="280" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">react-dropzone · XLSX.js</text>
+<text x="280" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">File preview (5 rows)</text>
+<text x="280" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Progress bar animation</text>
+<text x="280" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Size + format validation</text>
+
+<!-- Box 3: SingleTicketForm -->
+<rect x="506" y="224" width="228" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="518" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">SingleTicketForm.tsx</text>
+<text x="518" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Controlled React form</text>
+<text x="518" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">DEFAULTS pre-filled</text>
+<text x="518" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Dropdowns: severity,</text>
+<text x="518" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">user_type, day_of_week</text>
+
+<!-- Box 4: TicketTable -->
+<rect x="744" y="224" width="228" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="756" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">TicketTable.tsx</text>
+<text x="756" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Sortable results table</text>
+<text x="756" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Keys: verdict, confidence,</text>
+<text x="756" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">risk_score, ticket_id</text>
+<text x="756" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">RiskBar · row highlight</text>
+
+<!-- Box 5: TicketDetail -->
+<rect x="982" y="224" width="228" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="994" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">TicketDetail.tsx</text>
+<text x="994" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Slide-in detail panel</text>
+<text x="994" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Full SIR markdown</text>
+<text x="994" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Similar incidents list</text>
+<text x="994" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Guardrail status badges</text>
+
+<!-- Box 6: StatusBadge + api/client -->
+<rect x="1220" y="224" width="244" height="74" fill="#ECFEFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<text x="1232" y="240" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#0C4A6E">StatusBadge + api/client.ts</text>
+<text x="1232" y="253" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">TRUE_POSITIVE (green)</text>
+<text x="1232" y="264" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">FALSE_POSITIVE (red)</text>
+<text x="1232" y="275" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">NEEDS_REVIEW (amber)</text>
+<text x="1232" y="286" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Axios: triageSingle / triageExcel</text>
+
+<!-- ─── Arrow 2 ─── -->
+<line x1="750" y1="306" x2="750" y2="326" stroke="#64748B" stroke-width="1.8" marker-end="url(#da)"/>
+<rect x="644" y="311" width="212" height="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" rx="3"/>
+<text x="750" y="321" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#64748B" text-anchor="middle" letter-spacing="0.5">REST JSON / Multipart · CORS Middleware</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 3: FASTAPI BACKEND  y=330                    -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="330" width="1464" height="116" fill="#FAFAFA" stroke="#1D4ED8" stroke-width="1.5" rx="6"/>
+<rect x="18" y="330" width="1464" height="26" fill="#1D4ED8" rx="6"/>
+<rect x="18" y="344" width="1464" height="12" fill="#1D4ED8"/>
+<text x="30" y="347" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" letter-spacing="1.3">FASTAPI BACKEND</text>
+<text x="145" y="347" font-family="'Segoe UI',Arial,sans-serif" font-size="9" fill="#BFDBFE" letter-spacing="0.8">Python 3.11 · Uvicorn · localhost:8000 · In-Memory Result Cache</text>
+
+<!-- Route chips: w=350, gap=10 -->
+<!-- Chip 1: POST /excel -->
+<rect x="30" y="362" width="350" height="52" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5" rx="4"/>
+<rect x="30" y="362" width="48" height="52" fill="#16A34A" rx="4"/>
+<rect x="60" y="362" width="18" height="52" fill="#16A34A"/>
+<text x="54" y="382" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">POST</text>
+<text x="90" y="380" font-family="'Consolas','Courier New',monospace" font-size="10" font-weight="700" fill="#1E40AF">/api/triage/excel</text>
+<text x="90" y="394" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">Upload .xlsx / .xls → read via pandas → per-row pipeline run</text>
+<text x="90" y="406" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Column validation · batch results + summary · error list</text>
+
+<!-- Chip 2: POST /single -->
+<rect x="390" y="362" width="350" height="52" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5" rx="4"/>
+<rect x="390" y="362" width="48" height="52" fill="#16A34A" rx="4"/>
+<rect x="420" y="362" width="18" height="52" fill="#16A34A"/>
+<text x="414" y="382" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">POST</text>
+<text x="450" y="380" font-family="'Consolas','Courier New',monospace" font-size="10" font-weight="700" fill="#1E40AF">/api/triage/single</text>
+<text x="450" y="394" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">JSON body: TicketIn (Pydantic) → single pipeline run</text>
+<text x="450" y="406" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Returns: result dict + 1-item summary</text>
+
+<!-- Chip 3: GET /{id} -->
+<rect x="750" y="362" width="350" height="52" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5" rx="4"/>
+<rect x="750" y="362" width="40" height="52" fill="#1D4ED8" rx="4"/>
+<rect x="780" y="362" width="10" height="52" fill="#1D4ED8"/>
+<text x="770" y="382" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">GET</text>
+<text x="802" y="380" font-family="'Consolas','Courier New',monospace" font-size="10" font-weight="700" fill="#1E40AF">/api/triage/{ticket_id}</text>
+<text x="802" y="394" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">Retrieve cached triage result by ticket ID</text>
+<text x="802" y="406" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">dict[ticket_id → result] in-memory · 404 if not found</text>
+
+<!-- Chip 4: GET /health + cache note -->
+<rect x="1110" y="362" width="356" height="52" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5" rx="4"/>
+<rect x="1110" y="362" width="40" height="52" fill="#1D4ED8" rx="4"/>
+<rect x="1140" y="362" width="10" height="52" fill="#1D4ED8"/>
+<text x="1130" y="382" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">GET</text>
+<text x="1162" y="380" font-family="'Consolas','Courier New',monospace" font-size="10" font-weight="700" fill="#1E40AF">/api/health</text>
+<text x="1162" y="394" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">Health check · model + RAG startup status</text>
+<text x="1162" y="406" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">lifespan: load_model() + init_rag() on startup</text>
+
+<!-- ─── Arrow 3 ─── -->
+<line x1="750" y1="446" x2="750" y2="466" stroke="#64748B" stroke-width="1.8" marker-end="url(#da)"/>
+<rect x="618" y="451" width="264" height="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" rx="3"/>
+<text x="750" y="461" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#64748B" text-anchor="middle" letter-spacing="0.5">_run_pipeline(ticket: TicketIn) · sequential · synchronous</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 4: AI PIPELINE  y=470                        -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="470" width="1464" height="210" fill="#F0FDF9" stroke="#0F766E" stroke-width="1.5" rx="6"/>
+<rect x="18" y="470" width="1464" height="26" fill="#0F766E" rx="6"/>
+<rect x="18" y="484" width="1464" height="12" fill="#0F766E"/>
+<text x="30" y="487" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" letter-spacing="1.3">AI TRIAGE PIPELINE</text>
+<text x="150" y="487" font-family="'Segoe UI',Arial,sans-serif" font-size="9" fill="#99F6E4" letter-spacing="0.8">6 Sequential Stages · pipeline/ package · main.py _run_pipeline()</text>
+
+<!-- ─── 6 Stage Boxes: w=218, gap=20, y=498, h=174 ─── -->
+<!-- stageX: 32, 270, 508, 746, 984, 1222 -->
+
+<!-- STAGE 1: Input Guardrail -->
+<rect x="32" y="498" width="218" height="174" fill="#FFFFFF" stroke="#9333EA" stroke-width="1.5" rx="5"/>
+<rect x="32" y="498" width="218" height="26" fill="#7C3AED" rx="4"/>
+<rect x="32" y="512" width="218" height="12" fill="#7C3AED"/>
+<text x="44" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">① INPUT GUARDRAIL</text>
+<text x="44" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">guardrail.py</text>
+<line x1="44" y1="544" x2="236" y2="544" stroke="#E2E8F0" stroke-width="1"/>
+<text x="44" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">Presidio PII Strip</text>
+<text x="44" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· command_line</text>
+<text x="44" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· decoded_command</text>
+<text x="44" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· user, source_ip, target_ip</text>
+<text x="44" y="606" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">NeMo Injection Check</text>
+<text x="44" y="618" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· 8 regex patterns</text>
+<text x="44" y="629" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· "jailbreak", "act as" …</text>
+<text x="44" y="643" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#DC2626" font-weight="600">→ HTTP 400 if BLOCKED</text>
+<text x="44" y="655" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#16A34A" font-weight="600">→ safe_ticket dict if PASSED</text>
+<text x="44" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#9333EA" font-weight="600">spaCy en_core_web_sm</text>
+
+<!-- arrow 1→2 -->
+<line x1="250" y1="585" x2="270" y2="585" stroke="#9CA3AF" stroke-width="1.8" marker-end="url(#ra)"/>
+
+<!-- STAGE 2: XGBoost Classifier -->
+<rect x="270" y="498" width="218" height="174" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="1.5" rx="5"/>
+<rect x="270" y="498" width="218" height="26" fill="#1D4ED8" rx="4"/>
+<rect x="270" y="512" width="218" height="12" fill="#1D4ED8"/>
+<text x="282" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">② XGBOOST CLASSIFIER</text>
+<text x="282" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">classifier.py</text>
+<line x1="282" y1="544" x2="474" y2="544" stroke="#E2E8F0" stroke-width="1"/>
+<text x="282" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">10-Feature Vector:</text>
+<text x="282" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">severity · user_type</text>
+<text x="282" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">hour_of_day · is_weekend</text>
+<text x="282" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">hist_tp · hist_fp</text>
+<text x="282" y="602" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">mitre_tactic_encoded</text>
+<text x="282" y="613" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">is_external_ip · is_known_tool</text>
+<text x="282" y="624" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">target_is_dc</text>
+<line x1="282" y1="630" x2="474" y2="630" stroke="#E2E8F0" stroke-width="1"/>
+<text x="282" y="643" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#1D4ED8" font-weight="600">joblib .pkl · predict_proba()</text>
+<text x="282" y="655" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#16A34A" font-weight="600">→ verdict + confidence score</text>
+<text x="282" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#6B7280">classes: FP / NR / TP</text>
+
+<!-- arrow 2→3 -->
+<line x1="488" y1="585" x2="508" y2="585" stroke="#9CA3AF" stroke-width="1.8" marker-end="url(#ra)"/>
+
+<!-- STAGE 3: RAG Retrieval -->
+<rect x="508" y="498" width="218" height="174" fill="#FFFFFF" stroke="#0891B2" stroke-width="1.5" rx="5"/>
+<rect x="508" y="498" width="218" height="26" fill="#0891B2" rx="4"/>
+<rect x="508" y="512" width="218" height="12" fill="#0891B2"/>
+<text x="520" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">③ RAG RETRIEVAL</text>
+<text x="520" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">rag.py</text>
+<line x1="520" y1="544" x2="712" y2="544" stroke="#E2E8F0" stroke-width="1"/>
+<text x="520" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">LlamaIndex + Supabase</text>
+<text x="520" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">ticket_to_text() → plain text</text>
+<text x="520" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">ada-002 → 1536-dim embed</text>
+<text x="520" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">pgvector cosine similarity</text>
+<text x="520" y="602" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">ivfflat index (lists=100)</text>
+<text x="520" y="613" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">top-3 similar incidents</text>
+<line x1="520" y1="619" x2="712" y2="619" stroke="#E2E8F0" stroke-width="1"/>
+<text x="520" y="631" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">Fallback (no Supabase):</text>
+<text x="520" y="643" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">keyword match on</text>
+<text x="520" y="655" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">mock_tickets dataset</text>
+<text x="520" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#0891B2" font-weight="600">→ similar[ ] for LLM context</text>
+
+<!-- arrow 3→4 -->
+<line x1="726" y1="585" x2="746" y2="585" stroke="#9CA3AF" stroke-width="1.8" marker-end="url(#ra)"/>
+
+<!-- STAGE 4: LLM Triage -->
+<rect x="746" y="498" width="218" height="174" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5" rx="5"/>
+<rect x="746" y="498" width="218" height="26" fill="#0F766E" rx="4"/>
+<rect x="746" y="512" width="218" height="12" fill="#0F766E"/>
+<text x="758" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">④ LLM TRIAGE</text>
+<text x="758" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">llm.py</text>
+<line x1="758" y1="544" x2="950" y2="544" stroke="#E2E8F0" stroke-width="1"/>
+<text x="758" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">GPT-4o-mini</text>
+<text x="758" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">System: SOC analyst persona</text>
+<text x="758" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Context in user message:</text>
+<text x="758" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  · PII-safe ticket fields</text>
+<text x="758" y="602" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  · XGBoost score + label</text>
+<text x="758" y="613" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  · top-3 similar incidents</text>
+<line x1="758" y1="619" x2="950" y2="619" stroke="#E2E8F0" stroke-width="1"/>
+<text x="758" y="631" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">Returns JSON:</text>
+<text x="758" y="643" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">verdict · confidence</text>
+<text x="758" y="655" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">risk_score · reasoning</text>
+<text x="758" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#0F766E" font-weight="600">can override XGBoost verdict</text>
+
+<!-- arrow 4→5 -->
+<line x1="964" y1="585" x2="984" y2="585" stroke="#9CA3AF" stroke-width="1.8" marker-end="url(#ra)"/>
+
+<!-- STAGE 5: Output Guardrail -->
+<rect x="984" y="498" width="218" height="174" fill="#FFFFFF" stroke="#B45309" stroke-width="1.5" rx="5"/>
+<rect x="984" y="498" width="218" height="26" fill="#B45309" rx="4"/>
+<rect x="984" y="512" width="218" height="12" fill="#B45309"/>
+<text x="996" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">⑤ OUTPUT GUARDRAIL</text>
+<text x="996" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">guardrail.py</text>
+<line x1="996" y1="544" x2="1188" y2="544" stroke="#E2E8F0" stroke-width="1"/>
+<text x="996" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">Validate LLM Response</text>
+<text x="996" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">verdict ∈ {</text>
+<text x="996" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  TRUE_POSITIVE</text>
+<text x="996" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  FALSE_POSITIVE</text>
+<text x="996" y="602" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">  NEEDS_REVIEW }</text>
+<line x1="996" y1="608" x2="1188" y2="608" stroke="#E2E8F0" stroke-width="1"/>
+<text x="996" y="621" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">If invalid:</text>
+<text x="996" y="633" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">→ override NEEDS_REVIEW</text>
+<text x="996" y="645" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">→ status: BLOCKED</text>
+<text x="996" y="657" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">guardrail_status{} attached</text>
+<text x="996" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#B45309" font-weight="600">to final result payload</text>
+
+<!-- arrow 5→6 -->
+<line x1="1202" y1="585" x2="1222" y2="585" stroke="#9CA3AF" stroke-width="1.8" marker-end="url(#ra)"/>
+
+<!-- STAGE 6: SIR + Human Approval -->
+<rect x="1222" y="498" width="242" height="174" fill="#FFF1F2" stroke="#B91C1C" stroke-width="2" rx="5"/>
+<rect x="1222" y="498" width="242" height="26" fill="#B91C1C" rx="4"/>
+<rect x="1222" y="512" width="242" height="12" fill="#B91C1C"/>
+<text x="1234" y="516" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="800" fill="#FFFFFF">⑥ SIR + HUMAN APPROVAL</text>
+<text x="1234" y="540" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#1E293B">sir_generator.py</text>
+<line x1="1234" y1="544" x2="1450" y2="544" stroke="#FECACA" stroke-width="1"/>
+<text x="1234" y="557" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#4B5563">Markdown SIR Report:</text>
+<text x="1234" y="569" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· Executive Summary</text>
+<text x="1234" y="580" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· Timeline + IOC list</text>
+<text x="1234" y="591" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· MITRE ATT&amp;CK mapping</text>
+<text x="1234" y="602" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· Similar past incidents</text>
+<text x="1234" y="613" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· Guardrail status</text>
+<text x="1234" y="624" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">· Recommended actions</text>
+<line x1="1234" y1="630" x2="1450" y2="630" stroke="#FECACA" stroke-width="1"/>
+<text x="1234" y="645" font-family="'Segoe UI',Arial,sans-serif" font-size="9" font-weight="700" fill="#B91C1C">→ Tier-1 Analyst Review</text>
+<text x="1234" y="657" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#9F1239">Human retains escalation</text>
+<text x="1234" y="667" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#9F1239">decision &amp; final sign-off</text>
+
+<!-- ─── Connector arrows: pipeline stages → services below ─── -->
+<!-- Stage 1 → Presidio (leftmost): x=142 down to y=712 -->
+<line x1="142" y1="680" x2="142" y2="706" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4,2" marker-end="url(#da)"/>
+<!-- Stage 2 → XGBoost: x=381 → service center ~404 -->
+<line x1="381" y1="680" x2="381" y2="706" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4,2" marker-end="url(#da)"/>
+<!-- Stage 3 → Supabase: x=619 → service center ~752 -->
+<line x1="619" y1="680" x2="619" y2="706" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4,2" marker-end="url(#da)"/>
+<!-- Stage 4 → OpenAI: x=857 → service center ~1110 -->
+<line x1="857" y1="680" x2="1110" y2="706" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4,2" marker-end="url(#da)"/>
+<!-- Stage 3 also → OpenAI (embedding): lighter, diagonal -->
+<line x1="700" y1="680" x2="1060" y2="706" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="3,3"/>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 5: EXTERNAL SERVICES  y=708                  -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="708" width="1464" height="140" fill="#FFFBF5" stroke="#B45309" stroke-width="1.5" rx="6"/>
+<rect x="18" y="708" width="1464" height="26" fill="#B45309" rx="6"/>
+<rect x="18" y="722" width="1464" height="12" fill="#B45309"/>
+<text x="30" y="725" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" letter-spacing="1.3">EXTERNAL SERVICES &amp; MODEL STORAGE</text>
+<text x="255" y="725" font-family="'Segoe UI',Arial,sans-serif" font-size="9" fill="#FDE68A" letter-spacing="0.8">Lazy-initialised · Graceful fallbacks if unavailable</text>
+
+<!-- Service boxes: w=348, gap=12 -->
+<!-- Service 1 (Presidio + spaCy) -->
+<rect x="32" y="740" width="348" height="98" fill="#FFFFFF" stroke="#9333EA" stroke-width="1.5" rx="4"/>
+<rect x="32" y="740" width="348" height="22" fill="#7C3AED" rx="3"/>
+<rect x="32" y="752" width="348" height="10" fill="#7C3AED"/>
+<text x="44" y="756" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#FFFFFF">Presidio Analyzer + spaCy NLP</text>
+<text x="44" y="775" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Used by: Stage 1 (Input Guardrail)</text>
+<text x="44" y="787" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Model: en_core_web_sm · AnalyzerEngine + AnonymizerEngine</text>
+<text x="44" y="799" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Entities: PERSON, IP_ADDRESS, USERNAME …</text>
+<text x="44" y="811" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Lazy-init on first ticket · silently skipped if not installed</text>
+<text x="44" y="830" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#9333EA" font-weight="600">pip: presidio-analyzer · presidio-anonymizer · spacy</text>
+
+<!-- Service 2 (XGBoost Model) -->
+<rect x="392" y="740" width="348" height="98" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="1.5" rx="4"/>
+<rect x="392" y="740" width="348" height="22" fill="#1D4ED8" rx="3"/>
+<rect x="392" y="752" width="348" height="10" fill="#1D4ED8"/>
+<text x="404" y="756" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#FFFFFF">XGBoost Classifier (.pkl)</text>
+<text x="404" y="775" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Used by: Stage 2 (ML Classifier)</text>
+<text x="404" y="787" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">File: ./models/xgboost_classifier.pkl (env: MODEL_PATH)</text>
+<text x="404" y="799" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Loaded at startup via joblib · train: scripts/train_model.py</text>
+<text x="404" y="811" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">3-class: FALSE_POSITIVE · NEEDS_REVIEW · TRUE_POSITIVE</text>
+<text x="404" y="830" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#1D4ED8" font-weight="600">Fallback if missing → NEEDS_REVIEW for all tickets</text>
+
+<!-- Service 3 (Supabase pgvector) -->
+<rect x="752" y="740" width="348" height="98" fill="#FFFFFF" stroke="#0891B2" stroke-width="1.5" rx="4"/>
+<rect x="752" y="740" width="348" height="22" fill="#0891B2" rx="3"/>
+<rect x="752" y="752" width="348" height="10" fill="#0891B2"/>
+<text x="764" y="756" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#FFFFFF">Supabase + pgvector</text>
+<text x="764" y="775" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Used by: Stage 3 (RAG Retrieval)</text>
+<text x="764" y="787" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Table: soc_incidents (id, ticket_id, content, metadata, embedding)</text>
+<text x="764" y="799" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">1536-dim vectors · ivfflat cosine index (lists=100)</text>
+<text x="764" y="811" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Env: SUPABASE_URL · SERVICE_KEY · DB_CONNECTION</text>
+<text x="764" y="830" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#0891B2" font-weight="600">Fallback if unavailable → keyword match on mock_tickets</text>
+
+<!-- Service 4 (OpenAI) -->
+<rect x="1112" y="740" width="352" height="98" fill="#FFFFFF" stroke="#059669" stroke-width="1.5" rx="4"/>
+<rect x="1112" y="740" width="352" height="22" fill="#059669" rx="3"/>
+<rect x="1112" y="752" width="352" height="10" fill="#059669"/>
+<text x="1124" y="756" font-family="'Segoe UI',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#FFFFFF">OpenAI API</text>
+<text x="1124" y="775" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#374151">Used by: Stage 3 (embeddings) + Stage 4 (LLM)</text>
+<text x="1124" y="787" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">text-embedding-ada-002 → 1536-dim vectors for RAG</text>
+<text x="1124" y="799" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">GPT-4o-mini → verdict + reasoning JSON (Stage 4)</text>
+<text x="1124" y="811" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#6B7280">Env: OPENAI_API_KEY</text>
+<text x="1124" y="830" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#059669" font-weight="600">Fallback if missing → XGBoost verdict used directly</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LANE 6: GRACEFUL DEGRADATION  y=862               -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="18" y="862" width="1464" height="96" fill="#F8FAFC" stroke="#64748B" stroke-width="1.5" rx="6"/>
+<rect x="18" y="862" width="1464" height="26" fill="#374151" rx="6"/>
+<rect x="18" y="876" width="1464" height="12" fill="#374151"/>
+<text x="30" y="879" font-family="'Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#D1D5DB" letter-spacing="1.3">GRACEFUL DEGRADATION</text>
+<text x="185" y="879" font-family="'Segoe UI',Arial,sans-serif" font-size="9" fill="#9CA3AF" letter-spacing="0.8">System operates in reduced mode if external services are unavailable</text>
+
+<!-- Degradation items: w=462, gap=14 -->
+<!-- Item 1 -->
+<rect x="32" y="894" width="462" height="56" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.3" rx="4" stroke-dasharray="5,2"/>
+<text x="46" y="910" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#92400E">⚠  No OpenAI API Key</text>
+<text x="46" y="923" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">LLM stage (Stage 4) is skipped entirely. XGBoost verdict and confidence are used</text>
+<text x="46" y="936" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">directly as the final result. No reasoning text generated. SIR is still produced.</text>
+<text x="46" y="944" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#B45309">_fallback_from_ml() in llm.py</text>
+
+<!-- Item 2 -->
+<rect x="508" y="894" width="462" height="56" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.3" rx="4" stroke-dasharray="5,2"/>
+<text x="522" y="910" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#92400E">⚠  No Supabase / pgvector</text>
+<text x="522" y="923" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">RAG stage (Stage 3) falls back to _mock_similar_incidents() — keyword-based</text>
+<text x="522" y="936" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">similarity matching against in-memory mock ticket dataset. No vectors used.</text>
+<text x="522" y="944" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#B45309">Seed with scripts/seed_rag.py when Supabase is available</text>
+
+<!-- Item 3 -->
+<rect x="984" y="894" width="462" height="56" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.3" rx="4" stroke-dasharray="5,2"/>
+<text x="998" y="910" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="700" fill="#92400E">⚠  XGBoost Model Not Trained</text>
+<text x="998" y="923" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">If .pkl not found at MODEL_PATH, Stage 2 returns NEEDS_REVIEW with 0.5</text>
+<text x="998" y="936" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" fill="#4B5563">confidence for all tickets. LLM stage still runs if OpenAI key is present.</text>
+<text x="998" y="944" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#B45309">Fix: python scripts/train_model.py</text>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- LEGEND BAR                                         -->
+<!-- ═══════════════════════════════════════════════════ -->
+<rect x="0" y="960" width="1500" height="14" fill="#F1F5F9"/>
+<rect x="0" y="960" width="1500" height="1" fill="#E2E8F0"/>
+<!-- legend items -->
+<rect x="28" y="964" width="10" height="8" fill="#7C3AED" rx="1"/>
+<text x="42" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">Input / Security</text>
+<rect x="138" y="964" width="10" height="8" fill="#0891B2" rx="1"/>
+<text x="152" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">Frontend (React)</text>
+<rect x="258" y="964" width="10" height="8" fill="#1D4ED8" rx="1"/>
+<text x="272" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">FastAPI Backend</text>
+<rect x="378" y="964" width="10" height="8" fill="#0F766E" rx="1"/>
+<text x="392" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">AI Pipeline</text>
+<rect x="468" y="964" width="10" height="8" fill="#B45309" rx="1"/>
+<text x="482" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">External Services</text>
+<rect x="588" y="964" width="10" height="8" fill="#B91C1C" rx="1"/>
+<text x="602" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#64748B">Human Approval Gate</text>
+<text x="1380" y="972" font-family="'Segoe UI',Arial,sans-serif" font-size="8" fill="#94A3B8">SOC Triage AI · POC</text>
+
+</svg>
+</div>
+</body>
+</html>

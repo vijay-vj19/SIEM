@@ -1,0 +1,292 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="Dr7DMQT3OmF4rzVI_hNX" name="Page-1">
+    <mxGraphModel dx="1341" dy="820" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="text;html=1;strokeColor=none;fillColor=#0F172A;fontColor=#F8FAFC;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=18;fontStyle=1;" value="SOC Triage AI — System Architecture" vertex="1">
+          <mxGeometry height="44" width="1480" x="10" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748B;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=9;" value="POC  ·  Level-1 Autonomous SOC Triage  ·  ML + RAG + LLM Pipeline  ·  FastAPI + React + XGBoost + GPT-4o-mini" vertex="1">
+          <mxGeometry height="18" width="1480" x="10" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="10" parent="1" style="swimlane;startSize=28;fillColor=#7C3AED;fontColor=#FFFFFF;strokeColor=#7C3AED;fontStyle=1;fontSize=10;letterSpacing=1;rounded=1;" value="INPUT SOURCES" vertex="1">
+          <mxGeometry height="125" width="1480" x="10" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="20" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" value="&lt;b&gt;Excel File Upload (.xlsx / .xls)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Drag-and-drop batch upload · react-dropzone · XLSX.js preview&lt;br&gt;19 required columns · pandas read_excel() · column validation&lt;br&gt;Progress bar · per-row error reporting" vertex="1">
+          <mxGeometry height="80" width="380" x="80" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" value="&lt;b&gt;Single Ticket Form (JSON POST)&lt;/b&gt;&lt;br&gt;&lt;br&gt;19 fields: ticket_id · severity · rule_triggered · mitre_attack · user · user_type&lt;br&gt;source_asset · source_ip · target_asset · target_ip · process&lt;br&gt;command_line · decoded_command · hour_of_day · day_of_week · hist_tp/fp_count" vertex="1">
+          <mxGeometry height="80" width="480" x="540" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="90" edge="1" parent="1" source="10" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="30" value="HTTP · Axios Client · REST">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="30" parent="1" style="swimlane;startSize=28;fillColor=#0891B2;fontColor=#FFFFFF;strokeColor=#0891B2;fontStyle=1;fontSize=10;letterSpacing=0;rounded=1;" value="FRONTEND  —  React 18 + Vite + Tailwind CSS · Dark SOC Dashboard · localhost:5173" vertex="1">
+          <mxGeometry height="155" width="1480" x="10" y="228" as="geometry" />
+        </mxCell>
+        <mxCell id="31" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;App.tsx&lt;/b&gt;&lt;br&gt;Main dashboard shell&lt;br&gt;Tab state management&lt;br&gt;Summary cards (TP/FP/NR)&lt;br&gt;react-hot-toast alerts" vertex="1">
+          <mxGeometry height="105" width="225" x="20" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="32" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ExcelUpload.tsx&lt;/b&gt;&lt;br&gt;react-dropzone · XLSX.js&lt;br&gt;File preview (first 5 rows)&lt;br&gt;Progress bar animation&lt;br&gt;Size + format validation" vertex="1">
+          <mxGeometry height="105" width="225" x="255" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="33" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;SingleTicketForm.tsx&lt;/b&gt;&lt;br&gt;Controlled React form&lt;br&gt;DEFAULTS pre-filled&lt;br&gt;Dropdowns: severity,&lt;br&gt;user_type, day_of_week" vertex="1">
+          <mxGeometry height="105" width="225" x="490" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="34" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;TicketTable.tsx&lt;/b&gt;&lt;br&gt;Sortable results table&lt;br&gt;Sort by: verdict, confidence,&lt;br&gt;risk_score, ticket_id&lt;br&gt;RiskBar · row highlight" vertex="1">
+          <mxGeometry height="105" width="225" x="725" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="35" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;TicketDetail.tsx&lt;/b&gt;&lt;br&gt;Slide-in detail panel&lt;br&gt;Full SIR markdown render&lt;br&gt;Similar incidents list&lt;br&gt;Guardrail status badges" vertex="1">
+          <mxGeometry height="105" width="225" x="960" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="36" parent="30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;StatusBadge + api/client.ts&lt;/b&gt;&lt;br&gt;TRUE_POSITIVE (green)&lt;br&gt;FALSE_POSITIVE (red)&lt;br&gt;NEEDS_REVIEW (amber)&lt;br&gt;Axios: triageSingle / triageExcel" vertex="1">
+          <mxGeometry height="105" width="265" x="1195" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="91" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="40" value="REST JSON / Multipart · CORS Middleware">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="40" parent="1" style="swimlane;startSize=28;fillColor=#1D4ED8;fontColor=#FFFFFF;strokeColor=#1D4ED8;fontStyle=1;fontSize=10;rounded=1;" value="FASTAPI BACKEND  —  Python 3.11 · Uvicorn · localhost:8000 · In-Memory Result Cache (dict[ticket_id → result])" vertex="1">
+          <mxGeometry height="135" width="1480" x="10" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="41" parent="40" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;POST  /api/triage/excel&lt;/b&gt;&lt;br&gt;&lt;br&gt;Upload .xlsx / .xls via multipart form&lt;br&gt;pandas read_excel() → per-row pipeline&lt;br&gt;Column validation · batch results + errors" vertex="1">
+          <mxGeometry height="87" width="345" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="42" parent="40" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;POST  /api/triage/single&lt;/b&gt;&lt;br&gt;&lt;br&gt;JSON body: TicketIn (Pydantic model)&lt;br&gt;Single ticket → _run_pipeline()&lt;br&gt;Returns: result dict + 1-item summary" vertex="1">
+          <mxGeometry height="87" width="345" x="375" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="43" parent="40" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;GET  /api/triage/{ticket_id}&lt;/b&gt;&lt;br&gt;&lt;br&gt;Retrieve cached result by ticket ID&lt;br&gt;dict[ticket_id → result] in-memory&lt;br&gt;404 if not found · reset on restart" vertex="1">
+          <mxGeometry height="87" width="345" x="730" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="44" parent="40" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;GET  /api/health&lt;/b&gt;&lt;br&gt;&lt;br&gt;Health check · service status&lt;br&gt;lifespan: load_model() + init_rag()&lt;br&gt;on startup · graceful shutdown" vertex="1">
+          <mxGeometry height="87" width="375" x="1085" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="92" edge="1" parent="1" source="40" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="50" value="_run_pipeline(ticket: TicketIn) · sequential · synchronous">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="50" parent="1" style="swimlane;startSize=28;fillColor=#0F766E;fontColor=#FFFFFF;strokeColor=#0F766E;fontStyle=1;fontSize=10;letterSpacing=0;rounded=1;" value="AI TRIAGE PIPELINE  —  6 Sequential Stages · pipeline/ package" vertex="1">
+          <mxGeometry height="255" width="1480" x="10" y="568" as="geometry" />
+        </mxCell>
+        <mxCell id="51" parent="50" style="swimlane;startSize=22;fillColor=#7C3AED;fontColor=#FFFFFF;strokeColor=#7C3AED;fontStyle=1;fontSize=9;rounded=1;" value="① INPUT GUARDRAIL" vertex="1">
+          <mxGeometry height="207" width="222" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="51t" parent="51" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;guardrail.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Presidio PII Strip&lt;/b&gt;&lt;br&gt;· command_line&lt;br&gt;· decoded_command&lt;br&gt;· user, source_ip, target_ip&lt;br&gt;(spaCy en_core_web_sm)&lt;br&gt;&lt;br&gt;&lt;b&gt;NeMo Injection Check&lt;/b&gt;&lt;br&gt;· 8 regex patterns&lt;br&gt;· &quot;jailbreak&quot;, &quot;act as&quot; …&lt;br&gt;&lt;br&gt;→ HTTP 400 if BLOCKED&lt;br&gt;→ safe_ticket if PASSED" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="57" edge="1" parent="50" source="51" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="52" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="52" parent="50" style="swimlane;startSize=22;fillColor=#1D4ED8;fontColor=#FFFFFF;strokeColor=#1D4ED8;fontStyle=1;fontSize=9;rounded=1;" value="② XGBOOST CLASSIFIER" vertex="1">
+          <mxGeometry height="207" width="222" x="262" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="52t" parent="52" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;classifier.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;10-Feature Vector:&lt;/b&gt;&lt;br&gt;severity · user_type&lt;br&gt;hour_of_day · is_weekend&lt;br&gt;hist_tp_count · hist_fp_count&lt;br&gt;mitre_tactic_encoded&lt;br&gt;is_external_ip&lt;br&gt;is_known_tool&lt;br&gt;target_is_dc&lt;br&gt;&lt;br&gt;joblib .pkl → predict_proba()&lt;br&gt;Classes: FP / NR / TP&lt;br&gt;→ verdict + confidence" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="58" edge="1" parent="50" source="52" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="53" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="53" parent="50" style="swimlane;startSize=22;fillColor=#0891B2;fontColor=#FFFFFF;strokeColor=#0891B2;fontStyle=1;fontSize=9;rounded=1;" value="③ RAG RETRIEVAL" vertex="1">
+          <mxGeometry height="207" width="222" x="504" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="53t" parent="53" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;rag.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;LlamaIndex + Supabase&lt;/b&gt;&lt;br&gt;ticket_to_text() → plain text&lt;br&gt;ada-002 → 1536-dim embed&lt;br&gt;pgvector cosine similarity&lt;br&gt;ivfflat index (lists=100)&lt;br&gt;top-3 similar incidents&lt;br&gt;&lt;br&gt;&lt;b&gt;Fallback (no Supabase):&lt;/b&gt;&lt;br&gt;_mock_similar_incidents()&lt;br&gt;keyword match on&lt;br&gt;mock_tickets dataset&lt;br&gt;&lt;br&gt;→ similar[] for LLM" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="59" edge="1" parent="50" source="53" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="54" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="54" parent="50" style="swimlane;startSize=22;fillColor=#0F766E;fontColor=#FFFFFF;strokeColor=#0F766E;fontStyle=1;fontSize=9;rounded=1;" value="④ LLM TRIAGE" vertex="1">
+          <mxGeometry height="207" width="222" x="746" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="54t" parent="54" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;llm.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;GPT-4o-mini&lt;/b&gt;&lt;br&gt;System: SOC analyst persona&lt;br&gt;&lt;br&gt;Context:&lt;br&gt;· PII-safe ticket fields&lt;br&gt;· XGBoost score + label&lt;br&gt;· top-3 similar incidents&lt;br&gt;&lt;br&gt;Returns JSON:&lt;br&gt;verdict · confidence&lt;br&gt;risk_score · reasoning&lt;br&gt;&lt;br&gt;Can override XGBoost" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="60" edge="1" parent="50" source="54" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="55" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="55" parent="50" style="swimlane;startSize=22;fillColor=#B45309;fontColor=#FFFFFF;strokeColor=#B45309;fontStyle=1;fontSize=9;rounded=1;" value="⑤ OUTPUT GUARDRAIL" vertex="1">
+          <mxGeometry height="207" width="222" x="988" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="55t" parent="55" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;guardrail.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Validate LLM Response&lt;/b&gt;&lt;br&gt;verdict ∈ {&lt;br&gt;  TRUE_POSITIVE&lt;br&gt;  FALSE_POSITIVE&lt;br&gt;  NEEDS_REVIEW }&lt;br&gt;&lt;br&gt;If invalid:&lt;br&gt;→ override NEEDS_REVIEW&lt;br&gt;→ status: BLOCKED&lt;br&gt;&lt;br&gt;guardrail_status{} attached&lt;br&gt;to final result payload" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="61" edge="1" parent="50" source="55" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="56" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="56" parent="50" style="swimlane;startSize=22;fillColor=#B91C1C;fontColor=#FFFFFF;strokeColor=#B91C1C;fontStyle=1;fontSize=9;rounded=1;" value="⑥ SIR + HUMAN APPROVAL" vertex="1">
+          <mxGeometry height="207" width="230" x="1230" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="56t" parent="56" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;sir_generator.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Markdown SIR Report:&lt;/b&gt;&lt;br&gt;· Executive Summary&lt;br&gt;· Timeline + IOC list&lt;br&gt;· MITRE ATT&amp;amp;CK mapping&lt;br&gt;· Similar past incidents&lt;br&gt;· Guardrail status&lt;br&gt;· Recommended actions&lt;br&gt;&lt;br&gt;&lt;b style=&quot;color:#B91C1C;&quot;&gt;→ Tier-1 Analyst Review&lt;/b&gt;&lt;br&gt;Human retains escalation&lt;br&gt;decision &amp;amp; final sign-off" vertex="1">
+          <mxGeometry height="183" width="230" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="93" edge="1" parent="1" source="51" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#7C3AED;fontSize=7;fontColor=#7C3AED;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="71" value="Stage 1: PII Strip&lt;br&gt;spaCy NLP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="94" edge="1" parent="1" source="52" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#1D4ED8;fontSize=7;fontColor=#1D4ED8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="72" value="Stage 2: predict()&lt;br&gt;joblib load">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="95" edge="1" parent="1" source="53" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#0891B2;fontSize=7;fontColor=#0891B2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="73" value="Stage 3: pgvector&lt;br&gt;cosine search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="96" edge="1" parent="1" source="54" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#059669;fontSize=7;fontColor=#059669;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="74" value="Stage 3+4: embed&lt;br&gt;+ chat API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="70" parent="1" style="swimlane;startSize=28;fillColor=#B45309;fontColor=#FFFFFF;strokeColor=#B45309;fontStyle=1;fontSize=10;rounded=1;" value="EXTERNAL SERVICES &amp;amp; MODEL STORAGE  —  Lazy-initialised · Graceful fallbacks if unavailable" vertex="1">
+          <mxGeometry height="170" width="1480" x="10" y="848" as="geometry" />
+        </mxCell>
+        <mxCell id="71" parent="70" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;Presidio Analyzer + spaCy NLP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 1 (Input Guardrail)&lt;br&gt;Model: en_core_web_sm&lt;br&gt;AnalyzerEngine + AnonymizerEngine&lt;br&gt;Entities: PERSON, IP_ADDRESS, USERNAME&lt;br&gt;&lt;br&gt;pip: presidio-analyzer · presidio-anonymizer" vertex="1">
+          <mxGeometry height="122" width="340" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="72" parent="70" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;XGBoost Classifier (.pkl)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 2 (ML Classifier)&lt;br&gt;File: ./models/xgboost_classifier.pkl&lt;br&gt;Loaded at startup via joblib&lt;br&gt;Classes: FALSE_POSITIVE / NEEDS_REVIEW / TRUE_POSITIVE&lt;br&gt;&lt;br&gt;Train: python scripts/train_model.py" vertex="1">
+          <mxGeometry height="122" width="340" x="370" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="73" parent="70" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;Supabase + pgvector&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 3 (RAG Retrieval)&lt;br&gt;Table: soc_incidents (id, content, metadata, embedding)&lt;br&gt;1536-dim vectors · ivfflat cosine index (lists=100)&lt;br&gt;Env: SUPABASE_URL · SERVICE_KEY · DB_CONNECTION&lt;br&gt;&lt;br&gt;Seed: python scripts/seed_rag.py" vertex="1">
+          <mxGeometry height="122" width="340" x="720" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="74" parent="70" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#059669;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;OpenAI API&lt;/b&gt;&lt;br&gt;&lt;br&gt;Stage 3: text-embedding-ada-002 → 1536-dim vectors&lt;br&gt;Stage 4: GPT-4o-mini → verdict + reasoning JSON&lt;br&gt;System prompt: SOC analyst persona · JSON mode&lt;br&gt;Env: OPENAI_API_KEY&lt;br&gt;&lt;br&gt;Fallback: XGBoost verdict used directly if missing" vertex="1">
+          <mxGeometry height="122" width="390" x="1070" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-96" parent="1" style="text;html=1;strokeColor=none;fillColor=#0F172A;fontColor=#F8FAFC;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=18;fontStyle=1;" value="SOC Triage AI — System Architecture" vertex="1">
+          <mxGeometry height="44" width="1480" x="10" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-97" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748B;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=9;" value="POC  ·  Level-1 Autonomous SOC Triage  ·  ML + RAG + LLM Pipeline  ·  FastAPI + React + XGBoost + GPT-4o-mini" vertex="1">
+          <mxGeometry height="18" width="1480" x="10" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-98" parent="1" style="swimlane;startSize=28;fillColor=#7C3AED;fontColor=#FFFFFF;strokeColor=#7C3AED;fontStyle=1;fontSize=10;letterSpacing=1;rounded=1;" value="INPUT SOURCES" vertex="1">
+          <mxGeometry height="125" width="1480" x="10" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-99" parent="H2rZLVM3bN1ewalhlBkx-98" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" value="&lt;b&gt;Excel File Upload (.xlsx / .xls)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Drag-and-drop batch upload · react-dropzone · XLSX.js preview&lt;br&gt;19 required columns · pandas read_excel() · column validation&lt;br&gt;Progress bar · per-row error reporting" vertex="1">
+          <mxGeometry height="80" width="380" x="80" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-100" parent="H2rZLVM3bN1ewalhlBkx-98" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" value="&lt;b&gt;Single Ticket Form (JSON POST)&lt;/b&gt;&lt;br&gt;&lt;br&gt;19 fields: ticket_id · severity · rule_triggered · mitre_attack · user · user_type&lt;br&gt;source_asset · source_ip · target_asset · target_ip · process&lt;br&gt;command_line · decoded_command · hour_of_day · day_of_week · hist_tp/fp_count" vertex="1">
+          <mxGeometry height="80" width="480" x="540" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-101" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-98" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="H2rZLVM3bN1ewalhlBkx-102" value="HTTP · Axios Client · REST">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-102" parent="1" style="swimlane;startSize=28;fillColor=#0891B2;fontColor=#FFFFFF;strokeColor=#0891B2;fontStyle=1;fontSize=10;letterSpacing=0;rounded=1;" value="FRONTEND  —  React 18 + Vite + Tailwind CSS · Dark SOC Dashboard · localhost:5173" vertex="1">
+          <mxGeometry height="155" width="1480" x="10" y="228" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-103" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;App.tsx&lt;/b&gt;&lt;br&gt;Main dashboard shell&lt;br&gt;Tab state management&lt;br&gt;Summary cards (TP/FP/NR)&lt;br&gt;react-hot-toast alerts" vertex="1">
+          <mxGeometry height="105" width="225" x="20" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-104" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ExcelUpload.tsx&lt;/b&gt;&lt;br&gt;react-dropzone · XLSX.js&lt;br&gt;File preview (first 5 rows)&lt;br&gt;Progress bar animation&lt;br&gt;Size + format validation" vertex="1">
+          <mxGeometry height="105" width="225" x="255" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-105" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;SingleTicketForm.tsx&lt;/b&gt;&lt;br&gt;Controlled React form&lt;br&gt;DEFAULTS pre-filled&lt;br&gt;Dropdowns: severity,&lt;br&gt;user_type, day_of_week" vertex="1">
+          <mxGeometry height="105" width="225" x="490" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-106" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;TicketTable.tsx&lt;/b&gt;&lt;br&gt;Sortable results table&lt;br&gt;Sort by: verdict, confidence,&lt;br&gt;risk_score, ticket_id&lt;br&gt;RiskBar · row highlight" vertex="1">
+          <mxGeometry height="105" width="225" x="725" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-107" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;TicketDetail.tsx&lt;/b&gt;&lt;br&gt;Slide-in detail panel&lt;br&gt;Full SIR markdown render&lt;br&gt;Similar incidents list&lt;br&gt;Guardrail status badges" vertex="1">
+          <mxGeometry height="105" width="225" x="960" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-108" parent="H2rZLVM3bN1ewalhlBkx-102" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;StatusBadge + api/client.ts&lt;/b&gt;&lt;br&gt;TRUE_POSITIVE (green)&lt;br&gt;FALSE_POSITIVE (red)&lt;br&gt;NEEDS_REVIEW (amber)&lt;br&gt;Axios: triageSingle / triageExcel" vertex="1">
+          <mxGeometry height="105" width="265" x="1195" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-109" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-102" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="H2rZLVM3bN1ewalhlBkx-110" value="REST JSON / Multipart · CORS Middleware">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-110" parent="1" style="swimlane;startSize=28;fillColor=#1D4ED8;fontColor=#FFFFFF;strokeColor=#1D4ED8;fontStyle=1;fontSize=10;rounded=1;" value="FASTAPI BACKEND  —  Python 3.11 · Uvicorn · localhost:8000 · In-Memory Result Cache (dict[ticket_id → result])" vertex="1">
+          <mxGeometry height="135" width="1480" x="10" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-111" parent="H2rZLVM3bN1ewalhlBkx-110" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;POST  /api/triage/excel&lt;/b&gt;&lt;br&gt;&lt;br&gt;Upload .xlsx / .xls via multipart form&lt;br&gt;pandas read_excel() → per-row pipeline&lt;br&gt;Column validation · batch results + errors" vertex="1">
+          <mxGeometry height="87" width="345" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-112" parent="H2rZLVM3bN1ewalhlBkx-110" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;POST  /api/triage/single&lt;/b&gt;&lt;br&gt;&lt;br&gt;JSON body: TicketIn (Pydantic model)&lt;br&gt;Single ticket → _run_pipeline()&lt;br&gt;Returns: result dict + 1-item summary" vertex="1">
+          <mxGeometry height="87" width="345" x="375" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-113" parent="H2rZLVM3bN1ewalhlBkx-110" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;GET  /api/triage/{ticket_id}&lt;/b&gt;&lt;br&gt;&lt;br&gt;Retrieve cached result by ticket ID&lt;br&gt;dict[ticket_id → result] in-memory&lt;br&gt;404 if not found · reset on restart" vertex="1">
+          <mxGeometry height="87" width="345" x="730" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-114" parent="H2rZLVM3bN1ewalhlBkx-110" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=9;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" value="&lt;b&gt;GET  /api/health&lt;/b&gt;&lt;br&gt;&lt;br&gt;Health check · service status&lt;br&gt;lifespan: load_model() + init_rag()&lt;br&gt;on startup · graceful shutdown" vertex="1">
+          <mxGeometry height="87" width="375" x="1085" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-115" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-110" style="edgeStyle=orthogonalEdgeStyle;fontSize=8;fontColor=#64748B;strokeColor=#94A3B8;" target="H2rZLVM3bN1ewalhlBkx-116" value="_run_pipeline(ticket: TicketIn) · sequential · synchronous">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-116" parent="1" style="swimlane;startSize=28;fillColor=#0F766E;fontColor=#FFFFFF;strokeColor=#0F766E;fontStyle=1;fontSize=10;letterSpacing=0;rounded=1;" value="AI TRIAGE PIPELINE  —  6 Sequential Stages · pipeline/ package" vertex="1">
+          <mxGeometry height="255" width="1480" x="10" y="568" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-117" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#7C3AED;fontColor=#FFFFFF;strokeColor=#7C3AED;fontStyle=1;fontSize=9;rounded=1;" value="① INPUT GUARDRAIL" vertex="1">
+          <mxGeometry height="207" width="222" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-118" parent="H2rZLVM3bN1ewalhlBkx-117" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;guardrail.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Presidio PII Strip&lt;/b&gt;&lt;br&gt;· command_line&lt;br&gt;· decoded_command&lt;br&gt;· user, source_ip, target_ip&lt;br&gt;(spaCy en_core_web_sm)&lt;br&gt;&lt;br&gt;&lt;b&gt;NeMo Injection Check&lt;/b&gt;&lt;br&gt;· 8 regex patterns&lt;br&gt;· &quot;jailbreak&quot;, &quot;act as&quot; …&lt;br&gt;&lt;br&gt;→ HTTP 400 if BLOCKED&lt;br&gt;→ safe_ticket if PASSED" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-119" edge="1" parent="H2rZLVM3bN1ewalhlBkx-116" source="H2rZLVM3bN1ewalhlBkx-117" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="H2rZLVM3bN1ewalhlBkx-120" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-120" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#1D4ED8;fontColor=#FFFFFF;strokeColor=#1D4ED8;fontStyle=1;fontSize=9;rounded=1;" value="② XGBOOST CLASSIFIER" vertex="1">
+          <mxGeometry height="207" width="222" x="262" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-121" parent="H2rZLVM3bN1ewalhlBkx-120" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;classifier.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;10-Feature Vector:&lt;/b&gt;&lt;br&gt;severity · user_type&lt;br&gt;hour_of_day · is_weekend&lt;br&gt;hist_tp_count · hist_fp_count&lt;br&gt;mitre_tactic_encoded&lt;br&gt;is_external_ip&lt;br&gt;is_known_tool&lt;br&gt;target_is_dc&lt;br&gt;&lt;br&gt;joblib .pkl → predict_proba()&lt;br&gt;Classes: FP / NR / TP&lt;br&gt;→ verdict + confidence" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-122" edge="1" parent="H2rZLVM3bN1ewalhlBkx-116" source="H2rZLVM3bN1ewalhlBkx-120" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="H2rZLVM3bN1ewalhlBkx-123" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-123" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#0891B2;fontColor=#FFFFFF;strokeColor=#0891B2;fontStyle=1;fontSize=9;rounded=1;" value="③ RAG RETRIEVAL" vertex="1">
+          <mxGeometry height="207" width="222" x="504" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-124" parent="H2rZLVM3bN1ewalhlBkx-123" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;rag.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;LlamaIndex + Supabase&lt;/b&gt;&lt;br&gt;ticket_to_text() → plain text&lt;br&gt;ada-002 → 1536-dim embed&lt;br&gt;pgvector cosine similarity&lt;br&gt;ivfflat index (lists=100)&lt;br&gt;top-3 similar incidents&lt;br&gt;&lt;br&gt;&lt;b&gt;Fallback (no Supabase):&lt;/b&gt;&lt;br&gt;_mock_similar_incidents()&lt;br&gt;keyword match on&lt;br&gt;mock_tickets dataset&lt;br&gt;&lt;br&gt;→ similar[] for LLM" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-125" edge="1" parent="H2rZLVM3bN1ewalhlBkx-116" source="H2rZLVM3bN1ewalhlBkx-123" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="H2rZLVM3bN1ewalhlBkx-126" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-126" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#0F766E;fontColor=#FFFFFF;strokeColor=#0F766E;fontStyle=1;fontSize=9;rounded=1;" value="④ LLM TRIAGE" vertex="1">
+          <mxGeometry height="207" width="222" x="746" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-127" parent="H2rZLVM3bN1ewalhlBkx-126" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;llm.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;GPT-4o-mini&lt;/b&gt;&lt;br&gt;System: SOC analyst persona&lt;br&gt;&lt;br&gt;Context:&lt;br&gt;· PII-safe ticket fields&lt;br&gt;· XGBoost score + label&lt;br&gt;· top-3 similar incidents&lt;br&gt;&lt;br&gt;Returns JSON:&lt;br&gt;verdict · confidence&lt;br&gt;risk_score · reasoning&lt;br&gt;&lt;br&gt;Can override XGBoost" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-128" edge="1" parent="H2rZLVM3bN1ewalhlBkx-116" source="H2rZLVM3bN1ewalhlBkx-126" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="H2rZLVM3bN1ewalhlBkx-129" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-129" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#B45309;fontColor=#FFFFFF;strokeColor=#B45309;fontStyle=1;fontSize=9;rounded=1;" value="⑤ OUTPUT GUARDRAIL" vertex="1">
+          <mxGeometry height="207" width="222" x="988" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-130" parent="H2rZLVM3bN1ewalhlBkx-129" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;guardrail.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Validate LLM Response&lt;/b&gt;&lt;br&gt;verdict ∈ {&lt;br&gt;  TRUE_POSITIVE&lt;br&gt;  FALSE_POSITIVE&lt;br&gt;  NEEDS_REVIEW }&lt;br&gt;&lt;br&gt;If invalid:&lt;br&gt;→ override NEEDS_REVIEW&lt;br&gt;→ status: BLOCKED&lt;br&gt;&lt;br&gt;guardrail_status{} attached&lt;br&gt;to final result payload" vertex="1">
+          <mxGeometry height="183" width="222" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-131" edge="1" parent="H2rZLVM3bN1ewalhlBkx-116" source="H2rZLVM3bN1ewalhlBkx-129" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9CA3AF;" target="H2rZLVM3bN1ewalhlBkx-132" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-132" parent="H2rZLVM3bN1ewalhlBkx-116" style="swimlane;startSize=22;fillColor=#B91C1C;fontColor=#FFFFFF;strokeColor=#B91C1C;fontStyle=1;fontSize=9;rounded=1;" value="⑥ SIR + HUMAN APPROVAL" vertex="1">
+          <mxGeometry height="207" width="230" x="1230" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-133" parent="H2rZLVM3bN1ewalhlBkx-132" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=8;spacingLeft=6;spacingTop=4;" value="&lt;i&gt;sir_generator.py&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Markdown SIR Report:&lt;/b&gt;&lt;br&gt;· Executive Summary&lt;br&gt;· Timeline + IOC list&lt;br&gt;· MITRE ATT&amp;amp;CK mapping&lt;br&gt;· Similar past incidents&lt;br&gt;· Guardrail status&lt;br&gt;· Recommended actions&lt;br&gt;&lt;br&gt;&lt;b style=&quot;color:#B91C1C;&quot;&gt;→ Tier-1 Analyst Review&lt;/b&gt;&lt;br&gt;Human retains escalation&lt;br&gt;decision &amp;amp; final sign-off" vertex="1">
+          <mxGeometry height="183" width="230" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-134" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-117" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#7C3AED;fontSize=7;fontColor=#7C3AED;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="H2rZLVM3bN1ewalhlBkx-139" value="Stage 1: PII Strip&lt;br&gt;spaCy NLP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-135" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-120" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#1D4ED8;fontSize=7;fontColor=#1D4ED8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="H2rZLVM3bN1ewalhlBkx-140" value="Stage 2: predict()&lt;br&gt;joblib load">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-136" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-123" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#0891B2;fontSize=7;fontColor=#0891B2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="H2rZLVM3bN1ewalhlBkx-141" value="Stage 3: pgvector&lt;br&gt;cosine search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-137" edge="1" parent="1" source="H2rZLVM3bN1ewalhlBkx-126" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#059669;fontSize=7;fontColor=#059669;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="H2rZLVM3bN1ewalhlBkx-142" value="Stage 3+4: embed&lt;br&gt;+ chat API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-138" parent="1" style="swimlane;startSize=28;fillColor=#B45309;fontColor=#FFFFFF;strokeColor=#B45309;fontStyle=1;fontSize=10;rounded=1;" value="EXTERNAL SERVICES &amp;amp; MODEL STORAGE  —  Lazy-initialised · Graceful fallbacks if unavailable" vertex="1">
+          <mxGeometry height="170" width="1480" x="10" y="848" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-139" parent="H2rZLVM3bN1ewalhlBkx-138" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;Presidio Analyzer + spaCy NLP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 1 (Input Guardrail)&lt;br&gt;Model: en_core_web_sm&lt;br&gt;AnalyzerEngine + AnonymizerEngine&lt;br&gt;Entities: PERSON, IP_ADDRESS, USERNAME&lt;br&gt;&lt;br&gt;pip: presidio-analyzer · presidio-anonymizer" vertex="1">
+          <mxGeometry height="122" width="340" x="20" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-140" parent="H2rZLVM3bN1ewalhlBkx-138" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;XGBoost Classifier (.pkl)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 2 (ML Classifier)&lt;br&gt;File: ./models/xgboost_classifier.pkl&lt;br&gt;Loaded at startup via joblib&lt;br&gt;Classes: FALSE_POSITIVE / NEEDS_REVIEW / TRUE_POSITIVE&lt;br&gt;&lt;br&gt;Train: python scripts/train_model.py" vertex="1">
+          <mxGeometry height="122" width="340" x="370" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-141" parent="H2rZLVM3bN1ewalhlBkx-138" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;Supabase + pgvector&lt;/b&gt;&lt;br&gt;&lt;br&gt;Used by: Stage 3 (RAG Retrieval)&lt;br&gt;Table: soc_incidents (id, content, metadata, embedding)&lt;br&gt;1536-dim vectors · ivfflat cosine index (lists=100)&lt;br&gt;Env: SUPABASE_URL · SERVICE_KEY · DB_CONNECTION&lt;br&gt;&lt;br&gt;Seed: python scripts/seed_rag.py" vertex="1">
+          <mxGeometry height="122" width="340" x="720" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="H2rZLVM3bN1ewalhlBkx-142" parent="H2rZLVM3bN1ewalhlBkx-138" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#059669;fontSize=9;verticalAlign=top;spacingTop=6;align=left;spacingLeft=8;" value="&lt;b&gt;OpenAI API&lt;/b&gt;&lt;br&gt;&lt;br&gt;Stage 3: text-embedding-ada-002 → 1536-dim vectors&lt;br&gt;Stage 4: GPT-4o-mini → verdict + reasoning JSON&lt;br&gt;System prompt: SOC analyst persona · JSON mode&lt;br&gt;Env: OPENAI_API_KEY&lt;br&gt;&lt;br&gt;Fallback: XGBoost verdict used directly if missing" vertex="1">
+          <mxGeometry height="122" width="390" x="1070" y="34" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
