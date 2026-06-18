@@ -1,6 +1,7 @@
 import { X, Download, Copy, CheckCircle, Shield, Clock } from 'lucide-react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import toast from 'react-hot-toast'
 import { StatusBadge } from './StatusBadge'
 import type { TriageResult } from '../types/ticket'
@@ -140,7 +141,7 @@ export function TicketDetail({ result, onClose }: Props) {
                             prose-code:bg-gray-800 prose-code:px-1 prose-code:rounded
                             prose-table:text-xs prose-th:text-gray-400 prose-td:text-gray-300
                             prose-strong:text-gray-200 prose-pre:bg-gray-950 prose-pre:text-gray-300">
-              <ReactMarkdown>{result.sir_report}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.sir_report}</ReactMarkdown>
             </div>
           </section>
         </div>
