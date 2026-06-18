@@ -58,12 +58,6 @@ npm run dev
 # Open http://localhost:5173
 ```
 
-### 3. Docker (optional)
-
-```bash
-docker-compose up --build
-```
-
 ## Supabase Setup (for RAG)
 
 Run this SQL once in the Supabase SQL editor:
