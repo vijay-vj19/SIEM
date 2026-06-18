@@ -44,11 +44,6 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
           <Shield size={22} className="text-blue-400" />
           <span className="font-bold text-gray-100 tracking-wide">SOC Triage AI</span>
-          <span className="text-xs text-gray-500 border border-gray-700 rounded px-2 py-0.5 ml-1">POC v0.1</span>
-          <div className="ml-auto flex items-center gap-2 text-xs text-gray-500">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Pipeline ready
-          </div>
         </div>
       </header>
 
