@@ -26,7 +26,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv(".env", override=True)
+except ImportError:
+    pass
+api_key = os.getenv("OPENAI_API_KEY")
+if api_key:
+    os.environ["OPENAI_API_KEY"] = api_key
 
 import json
 from data.mock_tickets import MOCK_TICKETS
@@ -82,7 +89,7 @@ def main():
         dimension=1536,
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+    embed_model = OpenAIEmbedding(model="text-embedding-3-small", api_key=openai_key)
 
     VectorStoreIndex.from_documents(
         documents,

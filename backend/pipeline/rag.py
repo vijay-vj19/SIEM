@@ -26,6 +26,7 @@ def init_rag() -> None:
     supabase_url = os.getenv("SUPABASE_URL", "")
     supabase_key = os.getenv("SUPABASE_SERVICE_KEY", "")
     db_conn = os.getenv("SUPABASE_DB_CONNECTION", "")
+    openai_key = os.getenv("OPENAI_API_KEY", "")
 
     if not all([supabase_url, supabase_key, db_conn]):
         logger.warning(
@@ -46,7 +47,7 @@ def init_rag() -> None:
             dimension=1536,
         )
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
-        embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+        embed_model = OpenAIEmbedding(model="text-embedding-3-small", api_key=openai_key)
 
         _index = VectorStoreIndex.from_vector_store(
             vector_store,

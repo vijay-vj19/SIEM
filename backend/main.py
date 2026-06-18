@@ -20,7 +20,14 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv(".env", override=True)
+except ImportError:
+    pass
+api_key = os.getenv("OPENAI_API_KEY")
+if api_key:
+    os.environ["OPENAI_API_KEY"] = api_key
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

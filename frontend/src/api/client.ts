@@ -4,7 +4,6 @@ import type { Ticket, TriageResponse, TriageResult } from '../types/ticket'
 const api = axios.create({
   baseURL: '/api',
   timeout: 120_000, // 2 min for bulk Excel uploads
-  headers: { 'Content-Type': 'application/json' },
 })
 
 export async function triageSingle(ticket: Ticket): Promise<TriageResponse> {
@@ -15,9 +14,7 @@ export async function triageSingle(ticket: Ticket): Promise<TriageResponse> {
 export async function triageExcel(file: File): Promise<TriageResponse> {
   const form = new FormData()
   form.append('file', file)
-  const { data } = await api.post<TriageResponse>('/triage/excel', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const { data } = await api.post<TriageResponse>('/triage/excel', form)
   return data
 }
 
