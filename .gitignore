@@ -8,9 +8,6 @@ dist/
 build/
 .pytest_cache/
 
-# Trained model (large binary — regenerate with train_model.py)
-backend/models/*.pkl
-
 # Environment secrets
 backend/.env
 .env
