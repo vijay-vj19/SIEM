@@ -1,0 +1,29 @@
+define flow block prompt injection
+  """Block prompt injection attempts in SIEM ticket fields."""
+  user said something containing "ignore previous instructions"
+    bot say "GUARDRAIL BLOCKED: Prompt injection attempt detected in ticket data."
+    stop
+
+  user said something containing "disregard"
+    bot say "GUARDRAIL BLOCKED: Potential prompt injection detected."
+    stop
+
+  user said something containing "you are now"
+    bot say "GUARDRAIL BLOCKED: Role-override attempt detected."
+    stop
+
+  user said something containing "forget everything"
+    bot say "GUARDRAIL BLOCKED: Context manipulation attempt detected."
+    stop
+
+define flow check siem data only
+  """Ensure the model only processes SIEM alert data."""
+  user said something not related to security alerts
+    bot say "GUARDRAIL BLOCKED: Input does not appear to be valid SIEM alert data."
+    stop
+
+define flow ensure valid verdict
+  """Ensure the LLM output contains a valid verdict field."""
+  bot said something not containing "TRUE_POSITIVE" and not containing "FALSE_POSITIVE" and not containing "NEEDS_REVIEW"
+    bot say "{\"verdict\": \"NEEDS_REVIEW\", \"confidence\": 0.5, \"risk_score\": 50, \"reasoning\": \"Unable to determine verdict. Manual review required.\"}"
+    stop
