@@ -89,7 +89,7 @@ def run_llm_triage(
         # Normalise fields
         return {
             "verdict": parsed.get("verdict", ml_result["verdict"]),
-            "confidence": float(parsed.get("confidence", ml_result["confidence"])),
+            "confidence": _normalise_confidence(parsed.get("confidence", ml_result["confidence"])),
             "risk_score": int(parsed.get("risk_score", 50)),
             "reasoning": parsed.get("reasoning", "No reasoning provided."),
         }
@@ -100,6 +100,14 @@ def run_llm_triage(
     except Exception as exc:
         logger.error(f"LLM call failed: {exc}")
         return _fallback_from_ml(ml_result, reasoning=f"LLM unavailable: {exc}")
+
+
+def _normalise_confidence(value: float) -> float:
+    """LLM sometimes returns confidence as a percentage (e.g. 55) instead of a 0-1 fraction."""
+    value = float(value)
+    if value > 1:
+        value /= 100
+    return max(0.0, min(1.0, round(value, 4)))
 
 
 def _fallback_from_ml(ml_result: dict, reasoning: str = "") -> dict:
