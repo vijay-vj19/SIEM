@@ -1,5 +1,5 @@
 """
-Guardrail pipeline: Presidio PII stripping + NeMo input/output rails.
+Guardrail pipeline: Presidio PII stripping + pattern-based input/output rails.
 PII is stripped before LLM calls; original values are preserved for the SIR report.
 """
 
@@ -34,26 +34,6 @@ def _get_presidio():
         except ImportError:
             logger.warning("presidio not installed — PII stripping disabled")
     return _analyzer, _anonymizer
-
-
-# ---------------------------------------------------------------------------
-# NeMo Guardrails setup (lazy-initialised)
-# ---------------------------------------------------------------------------
-_rails = None
-
-
-def _get_rails():
-    global _rails
-    if _rails is None:
-        try:
-            from nemoguardrails import RailsConfig, LLMRails
-
-            config = RailsConfig.from_path("./guardrails/config")
-            _rails = LLMRails(config)
-            logger.info("NeMo Guardrails initialized")
-        except Exception as exc:
-            logger.warning(f"NeMo Guardrails unavailable ({exc}) — rails disabled")
-    return _rails
 
 
 # ---------------------------------------------------------------------------

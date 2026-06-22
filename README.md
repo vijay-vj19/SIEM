@@ -8,8 +8,7 @@ or a manual form, and the ML + RAG + LLM pipeline returns a verdict
 
 ```
 Excel / Form → FastAPI backend
-                 ├── Presidio (PII strip)
-                 ├── NeMo Guardrails (injection check)
+                 ├── Presidio (PII strip) + pattern-based injection check
                  ├── XGBoost classifier
                  ├── LlamaIndex + Supabase RAG (similar incidents)
                  ├── GPT-4o-mini (verdict + reasoning)
@@ -109,7 +108,7 @@ historical_tp_count, historical_fp_count
 
 Each ticket flows through 6 sequential stages:
 
-1. **Guardrail (input)** — Presidio strips PII; NeMo blocks prompt injection
+1. **Guardrail (input)** — Presidio strips PII; pattern matching blocks prompt injection
 2. **XGBoost** — 10-feature ML classifier predicts FP / NR / TP
 3. **RAG** — LlamaIndex retrieves top-3 similar past incidents from Supabase
 4. **LLM** — GPT-4o-mini confirms/overrides verdict with reasoning
