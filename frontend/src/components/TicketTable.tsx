@@ -11,13 +11,6 @@ interface Props {
 
 type SortKey = 'ticket_id' | 'verdict' | 'confidence' | 'risk_score'
 
-const SEVERITY_COLOR: Record<string, string> = {
-  CRITICAL: 'text-red-400',
-  HIGH: 'text-orange-400',
-  MEDIUM: 'text-yellow-400',
-  LOW: 'text-blue-400',
-}
-
 export function TicketTable({ results, onSelect, selected }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('ticket_id')
   const [sortAsc, setSortAsc] = useState(true)

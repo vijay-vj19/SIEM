@@ -1,4 +1,4 @@
-import { X, Download, Copy, CheckCircle, Shield, Clock } from 'lucide-react'
+import { X, Download, Copy, CheckCircle, Shield } from 'lucide-react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
