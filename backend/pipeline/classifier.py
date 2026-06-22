@@ -123,7 +123,9 @@ FEATURE_NAMES = [
 
 def load_model(path: str | None = None) -> None:
     global _model
-    model_path = path or os.getenv("MODEL_PATH", "./models/xgboost_classifier.pkl")
+    DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "xgboost_classifier.pkl")
+    model_path = path or os.getenv("MODEL_PATH", DEFAULT_MODEL_PATH)
+
     try:
         _model = joblib.load(model_path)
         logger.info(f"XGBoost model loaded from {model_path}")
