@@ -1,9 +1,10 @@
-import { X, Download, Copy, CheckCircle, Shield } from 'lucide-react'
+import { X, Download, Copy, CheckCircle, Shield, FileDown } from 'lucide-react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import toast from 'react-hot-toast'
 import { StatusBadge } from './StatusBadge'
+import { downloadResultPdf } from '../api/client'
 import type { TriageResult } from '../types/ticket'
 
 interface Props {
@@ -20,6 +21,7 @@ const RAIL_COLOR: Record<string, string> = {
 
 export function TicketDetail({ result, onClose }: Props) {
   const [copied, setCopied] = useState(false)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
 
   if (!result) return null
 
@@ -31,6 +33,23 @@ export function TicketDetail({ result, onClose }: Props) {
     a.download = `SIR-${result.ticket_id}.md`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true)
+    try {
+      const blob = await downloadResultPdf(result.ticket_id)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `SIR-${result.ticket_id}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Failed to generate PDF')
+    } finally {
+      setDownloadingPdf(false)
+    }
   }
 
   const handleCopy = async () => {
@@ -60,6 +79,14 @@ export function TicketDetail({ result, onClose }: Props) {
             <button onClick={handleDownload} className="btn-ghost text-xs flex items-center gap-1.5">
               <Download size={13} />
               Download .md
+            </button>
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="btn-ghost text-xs flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <FileDown size={13} />
+              {downloadingPdf ? 'Generating…' : 'Download PDF'}
             </button>
             <button onClick={handleCopy} className="btn-ghost text-xs flex items-center gap-1.5">
               {copied ? <CheckCircle size={13} className="text-emerald-400" /> : <Copy size={13} />}
@@ -95,6 +122,26 @@ export function TicketDetail({ result, onClose }: Props) {
               {result.llm_reasoning}
             </p>
           </section>
+
+          {/* Root Cause Analysis */}
+          {result.root_cause && (
+            <section>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Root Cause Analysis</h3>
+              <p className="text-sm text-gray-300 leading-relaxed bg-gray-800/50 rounded-lg p-3">
+                {result.root_cause}
+              </p>
+              {result.contributing_factors && result.contributing_factors.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {result.contributing_factors.map((factor, i) => (
+                    <li key={i} className="text-xs text-gray-400 flex gap-2">
+                      <span className="text-blue-400">•</span>
+                      {factor}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
 
           {/* Similar incidents */}
           {result.similar_past_incidents?.length > 0 && (

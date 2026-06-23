@@ -38,6 +38,8 @@ export interface TriageResult {
   confidence: number
   xgboost_score: number
   llm_reasoning: string
+  root_cause?: string
+  contributing_factors?: string[]
   mitre_attack: string
   risk_score: number
   sir_report: string

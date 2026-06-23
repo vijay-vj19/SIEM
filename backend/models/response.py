@@ -27,6 +27,8 @@ class TriageResult(BaseModel):
     confidence: float
     xgboost_score: float
     llm_reasoning: str
+    root_cause: str = ""
+    contributing_factors: list[str] = []
     mitre_attack: str
     risk_score: int
     sir_report: str

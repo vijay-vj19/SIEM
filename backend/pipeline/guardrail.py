@@ -98,7 +98,7 @@ def run_input_guardrail(ticket: TicketIn) -> dict[str, Any]:
             return {"safe_ticket": None, "guardrail_status": status, "blocked": True}
 
     # Strip PII from free-text fields before sending to LLM
-    safe = ticket.model_dump()
+    safe = ticket.model_dump(mode="json")
     for field in ("command_line", "decoded_command", "user", "source_ip", "target_ip"):
         safe[field] = _strip_pii(str(safe.get(field, "")))
 
@@ -122,6 +122,8 @@ def validate_llm_output(llm_response: dict) -> tuple[dict, str]:
             "confidence": 0.5,
             "risk_score": 50,
             "reasoning": "LLM output guardrail triggered — verdict was invalid. Manual review required.",
+            "root_cause": "Not determined — LLM output failed validation.",
+            "contributing_factors": [],
         }
         return fallback, "BLOCKED"
 

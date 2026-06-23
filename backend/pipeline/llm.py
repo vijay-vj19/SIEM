@@ -18,14 +18,25 @@ Your job is to:
 1. Confirm or override the ML verdict (TRUE_POSITIVE / FALSE_POSITIVE / NEEDS_REVIEW)
 2. Explain your reasoning in 2-3 plain English sentences
 3. Assign a risk score from 0-100 (0=harmless, 100=critical breach in progress)
-4. Return ONLY valid JSON — no markdown, no explanation outside the JSON
+4. State the single most likely root cause in one sentence, grounded only in the ticket
+   data, ML verdict, and similar incidents provided — never invent details not present
+   in the input (no fabricated timelines, names, or forensic findings)
+5. List 2-4 short contributing factors that support the root cause (e.g. historical
+   FP/TP counts, time of day, account type, similarity to past incidents)
+6. Return ONLY valid JSON — no markdown, no explanation outside the JSON
 
 Response format:
 {
   "verdict": "FALSE_POSITIVE",
   "confidence": 0.94,
   "risk_score": 8,
-  "reasoning": "The account SVC-AnsibleDeploy is a known automation service account with 47 historical false positives on this exact rule. The decoded PowerShell command performs a routine Windows Time service health check with no malicious indicators. This is consistent with standard Ansible deployment automation."
+  "reasoning": "The account SVC-AnsibleDeploy is a known automation service account with 47 historical false positives on this exact rule. The decoded PowerShell command performs a routine Windows Time service health check with no malicious indicators. This is consistent with standard Ansible deployment automation.",
+  "root_cause": "Automated detection rule flagging routine Ansible service-account automation as suspicious PowerShell usage.",
+  "contributing_factors": [
+    "Service account with 47 historical false positives on this exact rule",
+    "Decoded command is a benign Windows Time service health check",
+    "No external IP or known malicious tool involved"
+  ]
 }"""
 
 
@@ -92,6 +103,8 @@ def run_llm_triage(
             "confidence": _normalise_confidence(parsed.get("confidence", ml_result["confidence"])),
             "risk_score": int(parsed.get("risk_score", 50)),
             "reasoning": parsed.get("reasoning", "No reasoning provided."),
+            "root_cause": parsed.get("root_cause", "Not determined from available data."),
+            "contributing_factors": parsed.get("contributing_factors", []),
         }
 
     except json.JSONDecodeError as exc:
@@ -118,4 +131,6 @@ def _fallback_from_ml(ml_result: dict, reasoning: str = "") -> dict:
         "confidence": ml_result.get("confidence", 0.5),
         "risk_score": risk_map.get(verdict, 50),
         "reasoning": reasoning or f"ML classifier verdict used (LLM unavailable). XGBoost classified as {verdict} with {ml_result.get('confidence', 0.5):.1%} confidence.",
+        "root_cause": "Not determined — LLM unavailable, root cause analysis requires LLM reasoning.",
+        "contributing_factors": [],
     }

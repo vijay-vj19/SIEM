@@ -1,10 +1,11 @@
 """
 SOC Triage AI — FastAPI backend.
 Endpoints:
-  POST /api/triage/excel    — process uploaded Excel file
-  POST /api/triage/single   — process single ticket JSON
-  GET  /api/triage/{id}     — retrieve cached result
-  GET  /api/health          — health check
+  POST /api/triage/excel       — process uploaded Excel file
+  POST /api/triage/single      — process single ticket JSON
+  GET  /api/triage/{id}        — retrieve cached result
+  GET  /api/triage/{id}/pdf    — download cached result as a PDF report
+  GET  /api/health             — health check
 """
 
 import logging
@@ -18,7 +19,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 try:
     from dotenv import load_dotenv
@@ -34,6 +35,10 @@ logger = logging.getLogger(__name__)
 
 # In-memory result cache keyed by ticket_id
 _result_cache: dict[str, dict] = {}
+
+# Raw pipeline materials kept separately (not part of the API response schema),
+# used only to regenerate the PDF report on demand.
+_pdf_context_cache: dict[str, dict] = {}
 
 # ---------------------------------------------------------------------------
 # Startup / shutdown
@@ -102,7 +107,7 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
     ml_result = predict(ticket)
 
     # Step 3: RAG — similar incidents
-    ticket_text = ticket_to_text(ticket.model_dump())
+    ticket_text = ticket_to_text(ticket.model_dump(mode="json"))
     similar = retrieve_similar(ticket_text)
 
     # Step 4: LLM triage
@@ -114,7 +119,7 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
 
     # Step 6: SIR report
     sir = generate_sir(
-        ticket=ticket.model_dump(),
+        ticket=ticket.model_dump(mode="json"),
         llm_result=llm_result,
         ml_result=ml_result,
         similar_incidents=similar,
@@ -129,6 +134,8 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
         "confidence": llm_result["confidence"],
         "xgboost_score": ml_result.get("xgboost_score", ml_result["confidence"]),
         "llm_reasoning": llm_result["reasoning"],
+        "root_cause": llm_result.get("root_cause", ""),
+        "contributing_factors": llm_result.get("contributing_factors", []),
         "mitre_attack": ticket.mitre_attack,
         "risk_score": llm_result["risk_score"],
         "sir_report": sir,
@@ -138,6 +145,13 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
     }
 
     _result_cache[ticket.ticket_id] = result
+    _pdf_context_cache[ticket.ticket_id] = {
+        "ticket": ticket.model_dump(mode="json"),
+        "llm_result": llm_result,
+        "ml_result": ml_result,
+        "similar": similar,
+        "guardrail_status": guardrail_status,
+    }
     return result
 
 
@@ -227,3 +241,26 @@ async def get_result(ticket_id: str):
     if result is None:
         raise HTTPException(status_code=404, detail=f"No result found for ticket {ticket_id}.")
     return result
+
+
+@app.get("/api/triage/{ticket_id}/pdf")
+async def get_result_pdf(ticket_id: str):
+    """Download the Security Incident Report for a ticket as a PDF."""
+    context = _pdf_context_cache.get(ticket_id)
+    if context is None:
+        raise HTTPException(status_code=404, detail=f"No result found for ticket {ticket_id}.")
+
+    from pipeline.pdf_generator import generate_pdf
+
+    pdf_bytes = generate_pdf(
+        ticket=context["ticket"],
+        llm_result=context["llm_result"],
+        ml_result=context["ml_result"],
+        similar_incidents=context["similar"],
+        guardrail_status=context["guardrail_status"],
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="SIR-{ticket_id}.pdf"'},
+    )

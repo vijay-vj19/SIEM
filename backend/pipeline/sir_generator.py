@@ -97,6 +97,14 @@ def generate_sir(
     recommended_action = VERDICT_ACTIONS.get(verdict, VERDICT_ACTIONS["NEEDS_REVIEW"])
     verdict_display = verdict.replace("_", " ")
 
+    root_cause = llm_result.get("root_cause", "Not determined from available data.")
+    contributing_factors = llm_result.get("contributing_factors", [])
+    factors_md = (
+        "\n".join(f"- {f}" for f in contributing_factors)
+        if contributing_factors
+        else "_No contributing factors identified._"
+    )
+
     report = f"""## Security Incident Report
 
 | Field        | Value                          |
@@ -134,6 +142,12 @@ Key features: {feature_summary}
 
 ### LLM Reasoning
 {reasoning}
+
+### Root Cause Analysis
+{root_cause}
+
+**Contributing Factors:**
+{factors_md}
 
 ### Similar Past Incidents
 {sim_table}

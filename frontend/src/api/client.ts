@@ -23,6 +23,11 @@ export async function getResult(ticketId: string): Promise<TriageResult> {
   return data
 }
 
+export async function downloadResultPdf(ticketId: string): Promise<Blob> {
+  const { data } = await api.get(`/triage/${ticketId}/pdf`, { responseType: 'blob' })
+  return data
+}
+
 export async function healthCheck(): Promise<{ status: string }> {
   const { data } = await api.get('/health')
   return data
