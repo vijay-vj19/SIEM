@@ -1,4 +1,4 @@
-import { X, Download, Copy, CheckCircle, Shield, FileDown } from 'lucide-react'
+import { X, Copy, CheckCircle, Shield, FileDown } from 'lucide-react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -24,16 +24,6 @@ export function TicketDetail({ result, onClose }: Props) {
   const [downloadingPdf, setDownloadingPdf] = useState(false)
 
   if (!result) return null
-
-  const handleDownload = () => {
-    const blob = new Blob([result.sir_report], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `SIR-${result.ticket_id}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
 
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true)
@@ -76,10 +66,6 @@ export function TicketDetail({ result, onClose }: Props) {
             <StatusBadge verdict={result.verdict} size="sm" />
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handleDownload} className="btn-ghost text-xs flex items-center gap-1.5">
-              <Download size={13} />
-              Download .md
-            </button>
             <button
               onClick={handleDownloadPdf}
               disabled={downloadingPdf}
