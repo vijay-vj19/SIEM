@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { Ticket, TriageResponse, TriageResult } from '../types/ticket'
+import type { LangSmithRange, LangSmithRunsResponse, LangSmithSummary } from '../types/langsmith'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -30,5 +31,15 @@ export async function downloadResultPdf(ticketId: string): Promise<Blob> {
 
 export async function healthCheck(): Promise<{ status: string }> {
   const { data } = await api.get('/health')
+  return data
+}
+
+export async function getLangsmithSummary(range: LangSmithRange): Promise<LangSmithSummary> {
+  const { data } = await api.get<LangSmithSummary>('/langsmith/summary', { params: { range } })
+  return data
+}
+
+export async function getLangsmithRuns(range: LangSmithRange, limit = 50): Promise<LangSmithRunsResponse> {
+  const { data } = await api.get<LangSmithRunsResponse>('/langsmith/runs', { params: { range, limit } })
   return data
 }

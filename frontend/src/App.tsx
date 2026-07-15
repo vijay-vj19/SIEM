@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Shield, Upload, FileText, AlertTriangle, CheckCircle, Clock, BarChart3, ShieldCheck } from 'lucide-react'
+import { Shield, Upload, FileText, AlertTriangle, CheckCircle, Clock, BarChart3, ShieldCheck, Activity } from 'lucide-react'
 import { ExcelUpload } from './components/ExcelUpload'
 import { SingleTicketForm } from './components/SingleTicketForm'
 import { TicketTable } from './components/TicketTable'
 import { TicketDetail } from './components/TicketDetail'
 import { PerformanceDashboard } from './components/dashboard/PerformanceDashboard'
+import { LlmPerformanceView } from './components/llm-performance/LlmPerformanceView'
 import type { TriageResponse, TriageResult, TriageSummary } from './types/ticket'
 
 type Tab = 'bulk' | 'single'
-type View = 'triage' | 'dashboard'
+type View = 'triage' | 'dashboard' | 'llm'
 
 const EMPTY_SUMMARY: TriageSummary = {
   total: 0,
@@ -58,6 +59,10 @@ export default function App() {
               <BarChart3 size={14} />
               Performance
             </TabButton>
+            <TabButton active={view === 'llm'} onClick={() => setView('llm')}>
+              <Activity size={14} />
+              LLM Performance
+            </TabButton>
           </div>
         </div>
       </header>
@@ -65,6 +70,8 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         {view === 'dashboard' ? (
           <PerformanceDashboard />
+        ) : view === 'llm' ? (
+          <LlmPerformanceView />
         ) : (
           <>
             {/* Summary cards */}

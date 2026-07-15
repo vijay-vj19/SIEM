@@ -92,6 +92,12 @@ Then run `python scripts/seed_rag.py`.
 | `SUPABASE_DB_CONNECTION` | PostgreSQL connection string for pgvector |
 | `MODEL_PATH` | Path to trained XGBoost model (default `./models/xgboost_classifier.pkl`) |
 | `CORS_ORIGINS` | Allowed origins (default `http://localhost:5173`) |
+| `LANGSMITH_API_KEY` | LangSmith API key (enables LLM tracing + the LLM Performance dashboard) |
+| `LANGSMITH_TRACING` | Set to `true` to enable tracing (SDK no-ops otherwise, even with a key set) |
+| `LANGSMITH_PROJECT` | LangSmith project name runs are grouped under (default `soc-triage-ai`) |
+
+> LangSmith is optional — without `LANGSMITH_API_KEY`, triage works exactly as
+> before and `/api/langsmith/*` endpoints return `configured: false`.
 
 ## Excel Upload Format
 

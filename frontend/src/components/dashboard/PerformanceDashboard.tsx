@@ -1,5 +1,5 @@
-import { StatTile } from './StatTile'
-import { DonutChart } from './DonutChart'
+import { StatTile } from '../charts/StatTile'
+import { DonutChart } from '../charts/DonutChart'
 import { PipelineFunnel } from './PipelineFunnel'
 import { FPRateChart } from './FPRateChart'
 import { KpiNotes } from './KpiNotes'

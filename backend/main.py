@@ -5,6 +5,8 @@ Endpoints:
   POST /api/triage/single      — process single ticket JSON
   GET  /api/triage/{id}        — retrieve cached result
   GET  /api/triage/{id}/pdf    — download cached result as a PDF report
+  GET  /api/langsmith/summary  — aggregate LLM run stats from LangSmith
+  GET  /api/langsmith/runs     — recent LLM runs from LangSmith
   GET  /api/health             — health check
 """
 
@@ -80,6 +82,7 @@ app.add_middleware(
 
 from models.ticket import REQUIRED_EXCEL_COLUMNS, TicketIn
 from models.response import GuardrailStatus, SimilarIncident, TriageResult, TriageResponse, TriageSummary
+from models.langsmith import LangSmithRunsResponse, LangSmithSummary
 
 
 def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
@@ -264,3 +267,28 @@ async def get_result_pdf(ticket_id: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="SIR-{ticket_id}.pdf"'},
     )
+
+
+VALID_RANGES = {"24h", "7d", "30d"}
+
+
+@app.get("/api/langsmith/summary", response_model=LangSmithSummary)
+async def langsmith_summary(range: str = "24h"):
+    """Aggregate LLM run stats (latency, tokens, cost, errors) from LangSmith."""
+    if range not in VALID_RANGES:
+        raise HTTPException(status_code=400, detail=f"range must be one of {sorted(VALID_RANGES)}")
+
+    from pipeline.langsmith_stats import get_summary
+
+    return get_summary(range)
+
+
+@app.get("/api/langsmith/runs", response_model=LangSmithRunsResponse)
+async def langsmith_runs(range: str = "24h", limit: int = 50):
+    """Recent LLM runs from LangSmith, each linking to the full trace."""
+    if range not in VALID_RANGES:
+        raise HTTPException(status_code=400, detail=f"range must be one of {sorted(VALID_RANGES)}")
+
+    from pipeline.langsmith_stats import get_recent_runs
+
+    return get_recent_runs(range, limit)

@@ -8,6 +8,8 @@ import logging
 import os
 from typing import Any
 
+from langsmith import traceable
+
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a SOC Level-1 triage analyst AI. You receive a SIEM security alert \
@@ -57,6 +59,7 @@ def _build_user_message(
     )
 
 
+@traceable(name="soc_triage_llm")
 def run_llm_triage(
     safe_ticket: dict,
     ml_result: dict[str, Any],
@@ -66,6 +69,10 @@ def run_llm_triage(
     Call GPT-4o-mini to confirm/override the XGBoost verdict.
     Returns dict with: verdict, confidence, risk_score, reasoning.
     Falls back gracefully if OpenAI key is not set.
+
+    Traced to LangSmith when LANGSMITH_TRACING=true / LANGSMITH_API_KEY are set
+    (no-ops otherwise — see pipeline/langsmith_stats.py for the dashboard that
+    reads these traces back).
     """
     api_key = os.getenv("OPENAI_API_KEY", "")
     if not api_key or api_key == "your_openai_key_here":
@@ -74,8 +81,9 @@ def run_llm_triage(
 
     try:
         from openai import OpenAI
+        from langsmith.wrappers import wrap_openai
 
-        client = OpenAI(api_key=api_key)
+        client = wrap_openai(OpenAI(api_key=api_key))
         user_msg = _build_user_message(
             safe_ticket,
             ml_result["verdict"],
