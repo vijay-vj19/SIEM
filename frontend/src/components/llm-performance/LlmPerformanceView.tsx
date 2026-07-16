@@ -6,16 +6,15 @@ import { StatTile } from '../charts/StatTile'
 import { DonutChart } from '../charts/DonutChart'
 import { TrendChart } from './TrendChart'
 import { RunsTable } from './RunsTable'
-import type { LangSmithRange, LangSmithRun, LangSmithSummary } from '../../types/langsmith'
+import type { LangSmithRun, LangSmithSummary } from '../../types/langsmith'
 
-const RANGES: { key: LangSmithRange; label: string }[] = [
-  { key: '24h', label: '24h' },
-  { key: '7d', label: '7d' },
-  { key: '30d', label: '30d' },
-]
+// All traced activity so far fits well inside 30 days, so 24h/7d/30d
+// currently return identical data — showing that choice would be
+// misleading. Once there's enough history for the windows to diverge,
+// reintroduce a range selector here.
+const RANGE = '30d'
 
 export function LlmPerformanceView() {
-  const [range, setRange] = useState<LangSmithRange>('24h')
   const [summary, setSummary] = useState<LangSmithSummary | null>(null)
   const [runs, setRuns] = useState<LangSmithRun[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +23,7 @@ export function LlmPerformanceView() {
     let cancelled = false
     setLoading(true)
 
-    Promise.all([getLangsmithSummary(range), getLangsmithRuns(range, 50)])
+    Promise.all([getLangsmithSummary(RANGE), getLangsmithRuns(RANGE, 50)])
       .then(([summaryRes, runsRes]) => {
         if (cancelled) return
         setSummary(summaryRes)
@@ -43,30 +42,15 @@ export function LlmPerformanceView() {
     return () => {
       cancelled = true
     }
-  }, [range])
+  }, [])
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-100">LLM Performance</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Live GPT-4o-mini call stats, traced via LangSmith.
-          </p>
-        </div>
-        <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
-          {RANGES.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => setRange(r.key)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                range === r.key ? 'bg-gray-700 text-gray-100' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+      <div>
+        <h1 className="text-xl font-bold text-gray-100">LLM Performance</h1>
+        <p className="text-xs text-gray-500 mt-1">
+          Live GPT-4o-mini call stats, traced via LangSmith — full activity history.
+        </p>
       </div>
 
       {loading && !summary && <p className="text-sm text-gray-500">Loading…</p>}
@@ -92,7 +76,7 @@ export function LlmPerformanceView() {
             <StatTile
               value={summary.total_runs.toLocaleString()}
               label="Total Runs"
-              sublabel={`in last ${range}`}
+              sublabel="in last 30 days"
               valueClass="text-blue-400"
               borderClass="border-blue-500/30"
             />
@@ -121,7 +105,7 @@ export function LlmPerformanceView() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <TrendChart buckets={summary.runs_over_time} range={range} />
+              <TrendChart buckets={summary.runs_over_time} range={RANGE} />
             </div>
             <DonutChart
               title="Token Usage"
