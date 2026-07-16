@@ -273,14 +273,19 @@ VALID_RANGES = {"24h", "7d", "30d"}
 
 
 @app.get("/api/langsmith/summary", response_model=LangSmithSummary)
-async def langsmith_summary(range: str = "24h"):
-    """Aggregate LLM run stats (latency, tokens, cost, errors) from LangSmith."""
+async def langsmith_summary(range: str = "24h", tz: str = "UTC"):
+    """Aggregate LLM run stats (latency, tokens, cost, errors) from LangSmith.
+
+    `tz` is the caller's IANA timezone (e.g. "Asia/Kolkata") so the
+    runs-over-time buckets align with the viewer's local calendar day/hour
+    instead of the server's UTC day.
+    """
     if range not in VALID_RANGES:
         raise HTTPException(status_code=400, detail=f"range must be one of {sorted(VALID_RANGES)}")
 
     from pipeline.langsmith_stats import get_summary
 
-    return get_summary(range)
+    return get_summary(range, tz)
 
 
 @app.get("/api/langsmith/runs", response_model=LangSmithRunsResponse)

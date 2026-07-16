@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { Ticket, TriageResponse, TriageResult } from '../types/ticket'
 import type { LangSmithRange, LangSmithRunsResponse, LangSmithSummary } from '../types/langsmith'
+import { DASHBOARD_TIMEZONE } from '../lib/timezone'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -35,7 +36,9 @@ export async function healthCheck(): Promise<{ status: string }> {
 }
 
 export async function getLangsmithSummary(range: LangSmithRange): Promise<LangSmithSummary> {
-  const { data } = await api.get<LangSmithSummary>('/langsmith/summary', { params: { range } })
+  const { data } = await api.get<LangSmithSummary>('/langsmith/summary', {
+    params: { range, tz: DASHBOARD_TIMEZONE },
+  })
   return data
 }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { LangSmithRange, RunsOverTimeBucket } from '../../types/langsmith'
+import { DASHBOARD_TIMEZONE, dashboardTzAbbreviation } from '../../lib/timezone'
 
 interface Props {
   buckets: RunsOverTimeBucket[]
@@ -13,9 +14,9 @@ const MAX_X_LABELS = 8 // thin out x-axis labels so they don't overlap on wide r
 function formatBucketLabel(bucket: string, range: LangSmithRange): string {
   const d = new Date(bucket)
   if (range === '24h') {
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: DASHBOARD_TIMEZONE })
   }
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: DASHBOARD_TIMEZONE })
 }
 
 function niceMax(value: number): number {
@@ -32,7 +33,9 @@ export function TrendChart({ buckets, range }: Props) {
   if (buckets.length === 0) {
     return (
       <div className="card">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Runs Over Time</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Runs Over Time <span className="text-gray-500 font-normal">({dashboardTzAbbreviation()})</span>
+        </h3>
         <p className="text-xs text-gray-500 py-8 text-center">No runs in this window.</p>
       </div>
     )
@@ -46,7 +49,9 @@ export function TrendChart({ buckets, range }: Props) {
 
   return (
     <div className="card">
-      <h3 className="text-sm font-semibold text-gray-300 mb-4">Runs Over Time</h3>
+      <h3 className="text-sm font-semibold text-gray-300 mb-4">
+        Runs Over Time <span className="text-gray-500 font-normal">({dashboardTzAbbreviation()})</span>
+      </h3>
 
       <div className="flex gap-3">
         {/* Y-axis ticks */}

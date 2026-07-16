@@ -12,6 +12,7 @@ import os
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -86,13 +87,35 @@ def _percentile(sorted_values: list[int], pct: float) -> int:
     return sorted_values[idx]
 
 
-def _bucket_key(dt: datetime, range_key: str) -> str:
+def _as_utc(dt: datetime) -> datetime:
+    """LangSmith returns naive datetimes that represent UTC wall-clock time —
+    tag them explicitly so downstream isoformat()/timezone conversions (both
+    here and in the browser) are correct instead of being silently
+    misinterpreted as local time."""
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def _resolve_tz(tz_name: str) -> ZoneInfo:
+    try:
+        return ZoneInfo(tz_name)
+    except (ZoneInfoNotFoundError, ValueError):
+        logger.warning(f"Unknown timezone '{tz_name}' — falling back to UTC")
+        return ZoneInfo("UTC")
+
+
+def _bucket_key(dt_utc: datetime, range_key: str, tz: ZoneInfo) -> str:
+    """Bucket boundary in the caller's local timezone, so 'today' in the
+    runs-over-time chart matches the viewer's own calendar day/hour rather
+    than the server's UTC day."""
+    local_dt = _as_utc(dt_utc).astimezone(tz)
     if range_key == "24h":
-        return dt.strftime("%Y-%m-%dT%H:00:00Z")
-    return dt.strftime("%Y-%m-%dT00:00:00Z")
+        bucket_start = local_dt.replace(minute=0, second=0, microsecond=0)
+    else:
+        bucket_start = local_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    return bucket_start.isoformat()
 
 
-def get_summary(range_key: str) -> dict:
+def get_summary(range_key: str, tz_name: str = "UTC") -> dict:
     if not _is_configured():
         return {"configured": False}
 
@@ -117,10 +140,11 @@ def get_summary(range_key: str) -> dict:
     completion_tokens = sum(r.completion_tokens or 0 for r in runs)
     total_cost = round(sum(_cost_usd(r) for r in runs), 4)
 
+    tz = _resolve_tz(tz_name)
     buckets: dict[str, int] = {}
     for r in runs:
         if r.start_time:
-            key = _bucket_key(r.start_time, range_key)
+            key = _bucket_key(r.start_time, range_key, tz)
             buckets[key] = buckets.get(key, 0) + 1
     runs_over_time = [{"bucket": k, "count": v} for k, v in sorted(buckets.items())]
 
@@ -173,7 +197,7 @@ def get_recent_runs(range_key: str, limit: int) -> dict:
                 "latency_ms": _latency_ms(r),
                 "total_tokens": (r.prompt_tokens or 0) + (r.completion_tokens or 0),
                 "cost_usd": _cost_usd(r),
-                "started_at": r.start_time.isoformat() if r.start_time else "",
+                "started_at": _as_utc(r.start_time).isoformat() if r.start_time else "",
                 "langsmith_url": url,
             }
         )

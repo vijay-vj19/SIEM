@@ -1,8 +1,13 @@
 import { ExternalLink } from 'lucide-react'
 import type { LangSmithRun } from '../../types/langsmith'
+import { DASHBOARD_TIMEZONE, dashboardTzAbbreviation } from '../../lib/timezone'
 
 interface Props {
   runs: LangSmithRun[]
+}
+
+function formatStarted(iso: string): string {
+  return new Date(iso).toLocaleString([], { timeZone: DASHBOARD_TIMEZONE })
 }
 
 export function RunsTable({ runs }: Props) {
@@ -27,7 +32,7 @@ export function RunsTable({ runs }: Props) {
               <th className="px-4 py-3 text-right">Latency</th>
               <th className="px-4 py-3 text-right">Tokens</th>
               <th className="px-4 py-3 text-right">Cost</th>
-              <th className="px-4 py-3 text-left">Started</th>
+              <th className="px-4 py-3 text-left">Started ({dashboardTzAbbreviation()})</th>
               <th className="px-4 py-3 text-center">Trace</th>
             </tr>
           </thead>
@@ -50,7 +55,7 @@ export function RunsTable({ runs }: Props) {
                 <td className="px-4 py-3 text-right font-mono text-gray-300">{r.latency_ms.toLocaleString()} ms</td>
                 <td className="px-4 py-3 text-right font-mono text-gray-300">{r.total_tokens.toLocaleString()}</td>
                 <td className="px-4 py-3 text-right font-mono text-gray-300">${r.cost_usd.toFixed(4)}</td>
-                <td className="px-4 py-3 text-gray-400 text-xs">{new Date(r.started_at).toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-400 text-xs">{formatStarted(r.started_at)}</td>
                 <td className="px-4 py-3 text-center">
                   {r.langsmith_url ? (
                     <a
