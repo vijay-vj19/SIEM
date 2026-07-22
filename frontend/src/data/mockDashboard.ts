@@ -12,17 +12,17 @@ export interface DashboardMockData {
 }
 
 export const MOCK_DASHBOARD_DATA: DashboardMockData = {
-  ingested: 1000,
-  processed: 986,
-  cache: { hit: 210, miss: 776, ttlDays: 30 },
-  kb: { hit: 542, miss: 234 },
-  classification: { truePositive: 172, falsePositive: 758, needsReview: 56 },
+  ingested: 3150,
+  processed: 3106,
+  cache: { hit: 662, miss: 2444, ttlDays: 30 },
+  kb: { hit: 1706, miss: 738 },
+  classification: { truePositive: 541, falsePositive: 2389, needsReview: 176 },
   fpRateByKb: {
     kbHitRate: 4.1,
-    kbHitCount: 22,
-    kbHitTotal: 542,
+    kbHitCount: 70,
+    kbHitTotal: 1706,
     kbMissRate: 9.8,
-    kbMissCount: 23,
-    kbMissTotal: 234,
+    kbMissCount: 72,
+    kbMissTotal: 738,
   },
 }

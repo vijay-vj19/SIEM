@@ -7,7 +7,6 @@ import { MOCK_DASHBOARD_DATA } from '../../data/mockDashboard'
 
 export function PerformanceDashboard() {
   const d = MOCK_DASHBOARD_DATA
-  const processedPct = (d.processed / d.ingested) * 100
   const cacheHitPct = (d.cache.hit / d.processed) * 100
   const kbEscalated = d.kb.hit + d.kb.miss
   const kbHitPct = (d.kb.hit / kbEscalated) * 100
@@ -17,40 +16,37 @@ export function PerformanceDashboard() {
   return (
     <div className="space-y-6">
       <div>
+        <p className="text-xs font-bold tracking-[0.2em] text-teal-400 uppercase mb-1">Leaderboard</p>
         <h1 className="text-xl font-bold text-gray-100">
-          Performance Dashboard — Illustrative Example ({d.ingested.toLocaleString()} tickets / day)
+          Performance Dashboard — Illustrative ({d.ingested.toLocaleString()} tickets/month)
         </h1>
         <p className="text-xs text-gray-500 mt-1">
-          Example figures for a representative daily volume — not measured production data.
+          Example figures for a representative monthly volume — not measured production data.
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile
           value={d.ingested.toLocaleString()}
-          label="Tickets Ingested"
-          sublabel="Excel · Form · API"
+          label="Ingested"
           valueClass="text-blue-400"
           borderClass="border-blue-500/30"
         />
         <StatTile
           value={d.processed.toLocaleString()}
-          label="Tickets Processed"
-          sublabel={`${processedPct.toFixed(1)}% of ingested`}
+          label="Processed"
           valueClass="text-blue-400"
           borderClass="border-blue-500/30"
         />
         <StatTile
           value={`${cacheHitPct.toFixed(1)}%`}
           label="Cache Hit Rate"
-          sublabel={`${d.cache.hit} of ${d.processed} · TTL ${d.cache.ttlDays}d`}
           valueClass="text-amber-400"
           borderClass="border-amber-500/30"
         />
         <StatTile
           value={`${kbHitPct.toFixed(1)}%`}
-          label="KB Hit Rate (fresh)"
-          sublabel={`${d.kb.hit} of ${kbEscalated} escalated`}
+          label="KB Hit Rate"
           valueClass="text-purple-400"
           borderClass="border-purple-500/30"
         />

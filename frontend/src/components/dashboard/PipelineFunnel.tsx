@@ -32,7 +32,7 @@ export function PipelineFunnel({ stages, classifiedTotal, classifiedSegments }: 
 
   return (
     <div className="card">
-      <h3 className="text-sm font-semibold text-gray-300 mb-4">Pipeline Funnel</h3>
+      <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">Pipeline Funnel</h3>
       <div className="space-y-3">
         {stages.map((s) => {
           const isHovered = hoveredStage === s.label
