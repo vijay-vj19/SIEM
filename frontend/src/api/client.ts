@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type { Ticket, TriageResponse, TriageResult } from '../types/ticket'
 import type { LangSmithRange, LangSmithRunsResponse, LangSmithSummary } from '../types/langsmith'
+import type { ModelComparisonResponse } from '../types/modelComparison'
+import type { LiveComparisonResponse } from '../types/liveComparison'
 import { DASHBOARD_TIMEZONE } from '../lib/timezone'
 
 const api = axios.create({
@@ -44,5 +46,17 @@ export async function getLangsmithSummary(range: LangSmithRange): Promise<LangSm
 
 export async function getLangsmithRuns(range: LangSmithRange, limit = 50): Promise<LangSmithRunsResponse> {
   const { data } = await api.get<LangSmithRunsResponse>('/langsmith/runs', { params: { range, limit } })
+  return data
+}
+
+export async function getModelComparison(): Promise<ModelComparisonResponse> {
+  const { data } = await api.get<ModelComparisonResponse>('/model-comparison')
+  return data
+}
+
+export async function predictExcelAllModels(file: File): Promise<LiveComparisonResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<LiveComparisonResponse>('/model-comparison/predict-excel', form)
   return data
 }

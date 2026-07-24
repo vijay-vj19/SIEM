@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Shield, Upload, FileText, AlertTriangle, CheckCircle, Clock, BarChart3, ShieldCheck, Activity } from 'lucide-react'
+import { Shield, Upload, FileText, AlertTriangle, CheckCircle, Clock, BarChart3, ShieldCheck, Activity, GitCompare, Zap } from 'lucide-react'
 import { ExcelUpload } from './components/ExcelUpload'
 import { SingleTicketForm } from './components/SingleTicketForm'
 import { TicketTable } from './components/TicketTable'
 import { TicketDetail } from './components/TicketDetail'
 import { PerformanceDashboard } from './components/dashboard/PerformanceDashboard'
 import { LlmPerformanceView } from './components/llm-performance/LlmPerformanceView'
+import { ModelComparisonView } from './components/model-comparison/ModelComparisonView'
+import { LiveComparisonView } from './components/model-comparison/LiveComparisonView'
 import type { TriageResponse, TriageResult, TriageSummary } from './types/ticket'
 
 type Tab = 'bulk' | 'single'
-type View = 'triage' | 'dashboard' | 'llm'
+type View = 'triage' | 'dashboard' | 'llm' | 'models' | 'live-models'
 
 const EMPTY_SUMMARY: TriageSummary = {
   total: 0,
@@ -63,6 +65,14 @@ export default function App() {
               <Activity size={14} />
               LLM Performance
             </TabButton>
+            <TabButton active={view === 'models'} onClick={() => setView('models')}>
+              <GitCompare size={14} />
+              Model Comparison
+            </TabButton>
+            <TabButton active={view === 'live-models'} onClick={() => setView('live-models')}>
+              <Zap size={14} />
+              Live Model Comparison
+            </TabButton>
           </div>
         </div>
       </header>
@@ -72,6 +82,10 @@ export default function App() {
           <PerformanceDashboard />
         ) : view === 'llm' ? (
           <LlmPerformanceView />
+        ) : view === 'models' ? (
+          <ModelComparisonView />
+        ) : view === 'live-models' ? (
+          <LiveComparisonView />
         ) : (
           <>
             {/* Summary cards */}

@@ -10,6 +10,7 @@ Endpoints:
   GET  /api/health             — health check
 """
 
+import json
 import logging
 import os
 import time
@@ -297,3 +298,61 @@ async def langsmith_runs(range: str = "24h", limit: int = 50):
     from pipeline.langsmith_stats import get_recent_runs
 
     return get_recent_runs(range, limit)
+
+
+MODEL_COMPARISON_RESULTS_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "model_comparison", "data", "comparison_results.json"
+)
+
+
+@app.get("/api/model-comparison")
+async def model_comparison():
+    """
+    Offline 7-model classifier comparison (model_comparison/compare.py),
+    NOT the live production classifier. Read-only static results generated
+    against a synthetic dataset for evaluation purposes.
+    """
+    if not os.path.exists(MODEL_COMPARISON_RESULTS_PATH):
+        raise HTTPException(
+            status_code=404,
+            detail="No comparison results found. Run: python -m model_comparison.compare",
+        )
+    with open(MODEL_COMPARISON_RESULTS_PATH) as f:
+        return json.load(f)
+
+
+@app.post("/api/model-comparison/predict-excel")
+async def model_comparison_predict_excel(file: UploadFile = File(...)):
+    """
+    Upload an Excel file and get live predictions from all 7 comparison
+    models for each row — NOT the production pipeline (no guardrails, RAG,
+    LLM reasoning, or SIR generation; classifier-only).
+
+    If the file includes a `label` column (ground truth), per-model
+    accuracy is also computed. Without it, only predictions and
+    cross-model agreement are returned — accuracy cannot be computed
+    without a known-correct answer to compare against.
+    """
+    if not file.filename or not file.filename.lower().endswith((".xlsx", ".xls")):
+        raise HTTPException(status_code=400, detail="Only .xlsx or .xls files are accepted.")
+
+    contents = await file.read()
+    try:
+        df = pd.read_excel(BytesIO(contents))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to parse Excel file: {exc}")
+
+    missing = [col for col in REQUIRED_EXCEL_COLUMNS if col not in df.columns]
+    if missing:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": f"Missing required columns: {missing}",
+                "expected_columns": REQUIRED_EXCEL_COLUMNS,
+                "received_columns": list(df.columns),
+            },
+        )
+
+    from model_comparison.serving import predict_all_models
+
+    return predict_all_models(df)

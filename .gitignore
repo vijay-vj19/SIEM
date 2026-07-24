@@ -19,3 +19,10 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# CatBoost training artifacts (regenerated on every compare.py run)
+backend/catboost_info/
+
+# Office lock files
+~$*.xlsx
+~$*.docx

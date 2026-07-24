@@ -1,0 +1,238 @@
+{
+  "dataset_rows": 10000,
+  "n_splits": 5,
+  "disclosure": "All 7 models use one untuned, reasonable hyperparameter configuration each, and all receive identical partial class-balanced sample weights (power=0.3). Exception: KNN has no sample_weight support in scikit-learn (library limitation, not exclusion by choice).",
+  "results": [
+    {
+      "name": "CatBoost",
+      "accuracy_mean": 0.7036,
+      "accuracy_std": 0.007742092740338375,
+      "precision_macro": 0.6297139751547498,
+      "recall_macro": 0.6125515151515152,
+      "f1_macro": 0.6122004680197319,
+      "confusion_matrix": [
+        [
+          4738,
+          306,
+          456
+        ],
+        [
+          895,
+          570,
+          535
+        ],
+        [
+          446,
+          326,
+          1728
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.15067271679872646,
+      "inference_ms_per_ticket_mean": 0.0025017501000547783,
+      "model_size_kb": 64.9
+    },
+    {
+      "name": "XGBoost",
+      "accuracy_mean": 0.702,
+      "accuracy_std": 0.008360621986431425,
+      "precision_macro": 0.6301930873698863,
+      "recall_macro": 0.6199,
+      "f1_macro": 0.6214532448026682,
+      "confusion_matrix": [
+        [
+          4653,
+          420,
+          427
+        ],
+        [
+          832,
+          669,
+          499
+        ],
+        [
+          424,
+          378,
+          1698
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.11169485819409601,
+      "inference_ms_per_ticket_mean": 0.0007709582976531237,
+      "model_size_kb": 488.0
+    },
+    {
+      "name": "LightGBM",
+      "accuracy_mean": 0.6998,
+      "accuracy_std": 0.009992997548283514,
+      "precision_macro": 0.6278398685438347,
+      "recall_macro": 0.6198333333333333,
+      "f1_macro": 0.6208160995730306,
+      "confusion_matrix": [
+        [
+          4620,
+          438,
+          442
+        ],
+        [
+          807,
+          683,
+          510
+        ],
+        [
+          417,
+          388,
+          1695
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.40814761640504005,
+      "inference_ms_per_ticket_mean": 0.002045341700431891,
+      "model_size_kb": 508.3
+    },
+    {
+      "name": "Random Forest",
+      "accuracy_mean": 0.6893,
+      "accuracy_std": 0.006004997918400965,
+      "precision_macro": 0.6097016939235238,
+      "recall_macro": 0.5743060606060606,
+      "f1_macro": 0.5561334206627885,
+      "confusion_matrix": [
+        [
+          4861,
+          150,
+          489
+        ],
+        [
+          1098,
+          263,
+          639
+        ],
+        [
+          592,
+          139,
+          1769
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.11738991700112819,
+      "inference_ms_per_ticket_mean": 0.008750037499703467,
+      "model_size_kb": 1036.4
+    },
+    {
+      "name": "SVM (RBF)",
+      "accuracy_mean": 0.6884,
+      "accuracy_std": 0.005360970061472065,
+      "precision_macro": 0.5952680404732759,
+      "recall_macro": 0.5858575757575757,
+      "f1_macro": 0.5779042553202508,
+      "confusion_matrix": [
+        [
+          4748,
+          307,
+          445
+        ],
+        [
+          995,
+          399,
+          606
+        ],
+        [
+          467,
+          296,
+          1737
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 4.743558624805883,
+      "inference_ms_per_ticket_mean": 0.1609500165010104,
+      "model_size_kb": 1002.6
+    },
+    {
+      "name": "Logistic Regression",
+      "accuracy_mean": 0.6812,
+      "accuracy_std": 0.0043657759905886195,
+      "precision_macro": 0.5761489113064089,
+      "recall_macro": 0.5668848484848485,
+      "f1_macro": 0.5502570672183761,
+      "confusion_matrix": [
+        [
+          4815,
+          229,
+          456
+        ],
+        [
+          1104,
+          264,
+          632
+        ],
+        [
+          545,
+          222,
+          1733
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.08693895839387551,
+      "inference_ms_per_ticket_mean": 0.00011462919937912374,
+      "model_size_kb": 2.1
+    },
+    {
+      "name": "KNN",
+      "accuracy_mean": 0.6698999999999999,
+      "accuracy_std": 0.0030886890422960854,
+      "precision_macro": 0.5695652519868729,
+      "recall_macro": 0.5465,
+      "f1_macro": 0.5414680622733837,
+      "confusion_matrix": [
+        [
+          4906,
+          241,
+          353
+        ],
+        [
+          1185,
+          303,
+          512
+        ],
+        [
+          696,
+          314,
+          1490
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW",
+        "TRUE_POSITIVE"
+      ],
+      "train_time_sec_mean": 0.0011973666027188302,
+      "inference_ms_per_ticket_mean": 0.034607925103046,
+      "model_size_kb": 1407.9
+    }
+  ]
+}
