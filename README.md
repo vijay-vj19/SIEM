@@ -82,6 +82,31 @@ Then run `python scripts/seed_rag.py`.
 > The app works without Supabase — RAG falls back to keyword-based
 > similarity matching against the mock tickets.
 
+## Audit Log Setup (Supabase)
+
+Every completed triage run writes one durable row to an `audit_log` table —
+this is the system of record (see [Logging](#logging) below for why it takes
+priority over the log file). Run this SQL once in the Supabase SQL editor:
+
+```sql
+create table audit_log (
+  id bigserial primary key,
+  ticket_id text,
+  verdict text,
+  confidence float,
+  risk_score int,
+  xgboost_verdict text,
+  guardrail_blocked bool,
+  processing_time_ms int,
+  raw jsonb,
+  created_at timestamptz default now()
+);
+```
+
+Uses the same `SUPABASE_DB_CONNECTION` as RAG — no extra env vars needed. If
+that variable is unset or Supabase is unreachable, `pipeline/audit.py` logs a
+warning and triage continues normally; auditing never blocks a triage run.
+
 ## Environment Variables (`backend/.env`)
 
 | Variable | Description |
@@ -98,6 +123,8 @@ Then run `python scripts/seed_rag.py`.
 
 > LangSmith is optional — without `LANGSMITH_API_KEY`, triage works exactly as
 > before and `/api/langsmith/*` endpoints return `configured: false`.
+
+| `LOG_DIR` | Directory for the rotating log file (default `./logs`). See [Logging](#logging). |
 
 ## Excel Upload Format
 
@@ -121,8 +148,32 @@ Each ticket flows through 6 sequential stages:
 5. **Guardrail (output)** — validates LLM response format
 6. **SIR Generator** — builds markdown Security Incident Report
 
+## Logging
+
+Every triage run is logged twice, for two different purposes:
+
+1. **Rotating log file** (`{LOG_DIR}/soc_triage.log`, ~5MB × 3 backups, console
+   output too) — narrates each of the 6 pipeline stages per ticket
+   (`[ticket_id] guardrail: ...`, `xgboost: ...`, `rag: ...`, `llm: ...`,
+   `output_rail: ...`, `sir: ...`, ending in `DONE verdict=... time=...ms`).
+   Good for tailing recent activity and debugging a specific run.
+2. **`audit_log` table in Supabase** (see [Audit Log Setup](#audit-log-setup-supabase))
+   — one durable row per completed run. This is the actual system of record.
+
+**On Render, `LOG_DIR` defaults to `./logs`, which is ephemeral** — wiped on
+every restart/redeploy, since this project doesn't provision a paid Render
+persistent disk. The `audit_log` table is what survives. If you do want the
+log file itself to persist, add a Render persistent disk (Dashboard → your
+service → Disks — starts around $0.25/GB/month, 1GB minimum), mount it (e.g.
+at `/var/data`), and set `LOG_DIR=/var/data/logs` in the service's
+environment variables.
+
+Third-party loggers (`presidio-analyzer`, `httpx`) are set to `WARNING` to
+keep the file readable — they're chatty at `INFO`.
+
 ## Graceful Degradation
 
 - **No OpenAI key** → XGBoost verdict used directly, no LLM reasoning
 - **No Supabase** → keyword-based fallback for similar incident retrieval
 - **Model not trained** → NEEDS_REVIEW returned for all tickets (run `train_model.py`)
+- **Supabase unavailable for auditing** → `pipeline/audit.py` logs a warning and triage continues; no audit row is written for that run

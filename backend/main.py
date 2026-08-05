@@ -15,6 +15,7 @@ import os
 import time
 from contextlib import asynccontextmanager
 from io import BytesIO
+from logging.handlers import RotatingFileHandler
 from typing import Any
 
 import pandas as pd
@@ -32,7 +33,32 @@ api_key = os.getenv("OPENAI_API_KEY")
 if api_key:
     os.environ["OPENAI_API_KEY"] = api_key
 
-logging.basicConfig(level=logging.INFO)
+# ---------------------------------------------------------------------------
+# Logging: console + rotating file. LOG_DIR defaults to ./logs (ephemeral on
+# Render without a paid persistent disk — the Supabase audit_log table is the
+# durable source of truth; this file is for tailing recent activity).
+# ---------------------------------------------------------------------------
+LOG_DIR = os.getenv("LOG_DIR", "./logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+_log_formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+
+_console_handler = logging.StreamHandler()
+_console_handler.setFormatter(_log_formatter)
+
+_file_handler = RotatingFileHandler(
+    os.path.join(LOG_DIR, "soc_triage.log"),
+    maxBytes=5 * 1024 * 1024,
+    backupCount=3,
+)
+_file_handler.setFormatter(_log_formatter)
+
+logging.basicConfig(level=logging.INFO, handlers=[_console_handler, _file_handler])
+
+# Quiet noisy third-party loggers.
+logging.getLogger("presidio-analyzer").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # In-memory result cache keyed by ticket_id
@@ -95,9 +121,12 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
     from pipeline.llm import run_llm_triage
     from pipeline.sir_generator import generate_sir
 
+    tid = ticket.ticket_id
+
     # Step 1: Guardrail — PII strip + injection check
     guard = run_input_guardrail(ticket)
     if guard["blocked"]:
+        logger.info(f"[{tid}] guardrail: BLOCKED (prompt injection detected)")
         raise HTTPException(
             status_code=400,
             detail=f"Ticket {ticket.ticket_id} blocked by input guardrail (prompt injection detected).",
@@ -105,20 +134,25 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
 
     safe_ticket: dict = guard["safe_ticket"]
     guardrail_status: dict = guard["guardrail_status"]
+    logger.info(f"[{tid}] guardrail: passed pii_scan={guardrail_status.get('presidio_pii_scan')}")
 
     # Step 2: XGBoost classifier
     ml_result = predict(ticket)
+    logger.info(f"[{tid}] xgboost: verdict={ml_result['verdict']} confidence={ml_result['confidence']:.4f}")
 
     # Step 3: RAG — similar incidents
     ticket_text = ticket_to_text(ticket.model_dump(mode="json"))
     similar = retrieve_similar(ticket_text)
+    logger.info(f"[{tid}] rag: hits={len(similar)}")
 
     # Step 4: LLM triage
     llm_result = run_llm_triage(safe_ticket, ml_result, similar)
+    logger.info(f"[{tid}] llm: verdict={llm_result['verdict']} risk_score={llm_result['risk_score']}")
 
     # Step 5: Output guardrail
     llm_result, output_rail_status = validate_llm_output(llm_result)
     guardrail_status["nemo_output_rail"] = output_rail_status
+    logger.info(f"[{tid}] output_rail: {output_rail_status}")
 
     # Step 6: SIR report
     sir = generate_sir(
@@ -128,8 +162,10 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
         similar_incidents=similar,
         guardrail_status=guardrail_status,
     )
+    logger.info(f"[{tid}] sir: generated ({len(sir)} chars)")
 
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
+    logger.info(f"[{tid}] DONE verdict={llm_result['verdict']} time={elapsed_ms}ms")
 
     result = {
         "ticket_id": ticket.ticket_id,
@@ -155,6 +191,20 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
         "similar": similar,
         "guardrail_status": guardrail_status,
     }
+
+    from pipeline.audit import log_audit_entry
+
+    log_audit_entry(
+        ticket_id=ticket.ticket_id,
+        verdict=llm_result["verdict"],
+        confidence=llm_result["confidence"],
+        risk_score=llm_result["risk_score"],
+        xgboost_verdict=ml_result["verdict"],
+        guardrail_blocked=False,
+        processing_time_ms=elapsed_ms,
+        raw=result,
+    )
+
     return result
 
 

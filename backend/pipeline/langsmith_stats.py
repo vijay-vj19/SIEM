@@ -130,7 +130,7 @@ def get_summary(range_key: str, tz_name: str = "UTC") -> dict:
             )
         )
     except Exception as exc:
-        logger.error(f"LangSmith list_runs failed: {exc}")
+        logger.exception("LangSmith list_runs failed")
         return {"configured": True, "error": str(exc)}
 
     total_runs = len(runs)
@@ -180,7 +180,7 @@ def get_recent_runs(range_key: str, limit: int) -> dict:
             )
         )
     except Exception as exc:
-        logger.error(f"LangSmith list_runs failed: {exc}")
+        logger.exception("LangSmith list_runs failed")
         return {"configured": True, "error": str(exc), "runs": []}
 
     out = []

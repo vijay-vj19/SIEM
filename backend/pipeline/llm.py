@@ -116,10 +116,10 @@ def run_llm_triage(
         }
 
     except json.JSONDecodeError as exc:
-        logger.error(f"LLM returned invalid JSON: {exc}")
+        logger.exception("LLM returned invalid JSON")
         return _fallback_from_ml(ml_result, reasoning="LLM returned malformed JSON.")
     except Exception as exc:
-        logger.error(f"LLM call failed: {exc}")
+        logger.exception("LLM call failed")
         return _fallback_from_ml(ml_result, reasoning=f"LLM unavailable: {exc}")
 
 
