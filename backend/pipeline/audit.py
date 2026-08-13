@@ -11,6 +11,8 @@ import logging
 import os
 from typing import Any
 
+from pipeline.call_trace import trace_calls
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,6 +20,7 @@ def _is_configured() -> bool:
     return bool(os.getenv("SUPABASE_DB_CONNECTION"))
 
 
+@trace_calls
 def log_audit_entry(
     ticket_id: str,
     verdict: str,

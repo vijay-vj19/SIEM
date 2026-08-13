@@ -37,9 +37,16 @@ if api_key:
 # Logging: console + rotating file. LOG_DIR defaults to ./logs (ephemeral on
 # Render without a paid persistent disk — the Supabase audit_log table is the
 # durable source of truth; this file is for tailing recent activity).
+#
+# LOG_LEVEL controls verbosity (default DEBUG — always-on micro-level detail:
+# XGBoost feature vector + full probability distribution, RAG candidate
+# scores, LLM token usage, which fields Presidio redacted, and a CALL/
+# RETURN/RAISE trace of every pipeline function). Set LOG_LEVEL=INFO to
+# quiet it back down to just the per-stage narration if it gets too noisy.
 # ---------------------------------------------------------------------------
 LOG_DIR = os.getenv("LOG_DIR", "./logs")
 os.makedirs(LOG_DIR, exist_ok=True)
+LOG_LEVEL = getattr(logging, os.getenv("LOG_LEVEL", "DEBUG").upper(), logging.DEBUG)
 
 _log_formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
 
@@ -53,11 +60,12 @@ _file_handler = RotatingFileHandler(
 )
 _file_handler.setFormatter(_log_formatter)
 
-logging.basicConfig(level=logging.INFO, handlers=[_console_handler, _file_handler])
+logging.basicConfig(level=LOG_LEVEL, handlers=[_console_handler, _file_handler])
 
-# Quiet noisy third-party loggers.
-logging.getLogger("presidio-analyzer").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
+# Quiet noisy third-party loggers regardless of LOG_LEVEL — DEBUG is for our
+# own pipeline's micro-detail, not library internals.
+for _noisy in ("presidio-analyzer", "presidio-anonymizer", "httpx", "httpcore", "openai", "urllib3", "llama_index"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +117,10 @@ app.add_middleware(
 from models.ticket import REQUIRED_EXCEL_COLUMNS, TicketIn
 from models.response import GuardrailStatus, SimilarIncident, TriageResult, TriageResponse, TriageSummary
 from models.langsmith import LangSmithRunsResponse, LangSmithSummary
+from pipeline.call_trace import trace_calls
 
 
+@trace_calls
 def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
     """Run the full triage pipeline for a single ticket. Returns a result dict."""
     t0 = time.perf_counter()
@@ -135,19 +145,23 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
     safe_ticket: dict = guard["safe_ticket"]
     guardrail_status: dict = guard["guardrail_status"]
     logger.info(f"[{tid}] guardrail: passed pii_scan={guardrail_status.get('presidio_pii_scan')}")
+    t1 = time.perf_counter()
 
     # Step 2: XGBoost classifier
     ml_result = predict(ticket)
     logger.info(f"[{tid}] xgboost: verdict={ml_result['verdict']} confidence={ml_result['confidence']:.4f}")
+    t2 = time.perf_counter()
 
     # Step 3: RAG — similar incidents
     ticket_text = ticket_to_text(ticket.model_dump(mode="json"))
-    similar = retrieve_similar(ticket_text)
+    similar = retrieve_similar(ticket_text, tid)
     logger.info(f"[{tid}] rag: hits={len(similar)}")
+    t3 = time.perf_counter()
 
     # Step 4: LLM triage
     llm_result = run_llm_triage(safe_ticket, ml_result, similar)
     logger.info(f"[{tid}] llm: verdict={llm_result['verdict']} risk_score={llm_result['risk_score']}")
+    t4 = time.perf_counter()
 
     # Step 5: Output guardrail
     llm_result, output_rail_status = validate_llm_output(llm_result)
@@ -163,8 +177,22 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
         guardrail_status=guardrail_status,
     )
     logger.info(f"[{tid}] sir: generated ({len(sir)} chars)")
+    t5 = time.perf_counter()
 
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
+    stage_timings_ms = {
+        "guardrail": int((t1 - t0) * 1000),
+        "xgboost": int((t2 - t1) * 1000),
+        "rag": int((t3 - t2) * 1000),
+        "llm": int((t4 - t3) * 1000),
+        "sir": int((t5 - t4) * 1000),
+        "total": elapsed_ms,
+    }
+    logger.info(
+        f"[{tid}] TIMING guardrail={stage_timings_ms['guardrail']}ms "
+        f"xgboost={stage_timings_ms['xgboost']}ms rag={stage_timings_ms['rag']}ms "
+        f"llm={stage_timings_ms['llm']}ms sir={stage_timings_ms['sir']}ms total={elapsed_ms}ms"
+    )
     logger.info(f"[{tid}] DONE verdict={llm_result['verdict']} time={elapsed_ms}ms")
 
     result = {
@@ -194,6 +222,21 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
 
     from pipeline.audit import log_audit_entry
 
+    # audit_raw carries everything in `result` plus micro-level diagnostics
+    # (feature vector, full probability distribution, LLM token usage, and
+    # a per-stage timing breakdown) that aren't part of the public API
+    # response shape but make the durable audit trail a genuinely useful
+    # "clear picture" of what happened, queryable via Supabase jsonb ops.
+    audit_raw = {
+        **result,
+        "ml_features": ml_result.get("features", {}),
+        "ml_probabilities": ml_result.get("probabilities", {}),
+        "llm_model": llm_result.get("model"),
+        "llm_token_usage": llm_result.get("token_usage"),
+        "llm_call_ms": llm_result.get("llm_call_ms"),
+        "stage_timings_ms": stage_timings_ms,
+    }
+
     log_audit_entry(
         ticket_id=ticket.ticket_id,
         verdict=llm_result["verdict"],
@@ -202,7 +245,7 @@ def _run_pipeline(ticket: TicketIn) -> dict[str, Any]:
         xgboost_verdict=ml_result["verdict"],
         guardrail_blocked=False,
         processing_time_ms=elapsed_ms,
-        raw=result,
+        raw=audit_raw,
     )
 
     return result

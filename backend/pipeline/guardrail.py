@@ -6,6 +6,7 @@ PII is stripped before LLM calls; original values are preserved for the SIR repo
 import logging
 from typing import Any
 from models.ticket import TicketIn
+from pipeline.call_trace import trace_calls
 
 logger = logging.getLogger(__name__)
 
@@ -52,22 +53,24 @@ INJECTION_PATTERNS = [
 ]
 
 
-def _strip_pii(text: str) -> str:
-    """Return anonymized text. Falls back to original if Presidio unavailable."""
+def _strip_pii(text: str) -> tuple[str, list[str]]:
+    """Return (anonymized text, entity types found). Falls back to the
+    original text (and no entities) if Presidio is unavailable or finds
+    nothing."""
     if not text:
-        return text
+        return text, []
     analyzer, anonymizer = _get_presidio()
     if analyzer is None:
-        return text
+        return text, []
     try:
         results = analyzer.analyze(text=text, language="en")
         if not results:
-            return text
+            return text, []
         anonymized = anonymizer.anonymize(text=text, analyzer_results=results)
-        return anonymized.text
+        return anonymized.text, [r.entity_type for r in results]
     except Exception as exc:
         logger.warning(f"Presidio anonymization failed: {exc}")
-        return text
+        return text, []
 
 
 def _check_injection(value: str) -> bool:
@@ -76,6 +79,7 @@ def _check_injection(value: str) -> bool:
     return any(pat in lowered for pat in INJECTION_PATTERNS)
 
 
+@trace_calls
 def run_input_guardrail(ticket: TicketIn) -> dict[str, Any]:
     """
     Run PII stripping and injection checks on ticket fields.
@@ -99,15 +103,23 @@ def run_input_guardrail(ticket: TicketIn) -> dict[str, Any]:
 
     # Strip PII from free-text fields before sending to LLM
     safe = ticket.model_dump(mode="json")
+    redacted_fields: dict[str, list[str]] = {}
     for field in ("command_line", "decoded_command", "user", "source_ip", "target_ip"):
-        safe[field] = _strip_pii(str(safe.get(field, "")))
+        anonymized, entity_types = _strip_pii(str(safe.get(field, "")))
+        safe[field] = anonymized
+        if entity_types:
+            redacted_fields[field] = entity_types
 
     if any(safe[f] != getattr(ticket, f, "") for f in ("command_line", "decoded_command")):
         status["presidio_pii_scan"] = "REDACTED"
 
+    if redacted_fields:
+        logger.debug(f"[{ticket.ticket_id}] pii_redacted={redacted_fields}")
+
     return {"safe_ticket": safe, "guardrail_status": status, "blocked": False}
 
 
+@trace_calls
 def validate_llm_output(llm_response: dict) -> tuple[dict, str]:
     """
     Validate LLM output contains a valid verdict.
@@ -117,6 +129,7 @@ def validate_llm_output(llm_response: dict) -> tuple[dict, str]:
     verdict = llm_response.get("verdict", "")
 
     if verdict not in valid_verdicts:
+        logger.debug(f"output_rail blocked: invalid verdict={verdict!r} response={llm_response}")
         fallback = {
             "verdict": "NEEDS_REVIEW",
             "confidence": 0.5,

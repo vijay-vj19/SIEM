@@ -6,6 +6,7 @@ Receives anonymised ticket data from the guardrail pipeline.
 import json
 import logging
 import os
+import time
 from typing import Any
 
 from langsmith import traceable
@@ -73,7 +74,15 @@ def run_llm_triage(
     Traced to LangSmith when LANGSMITH_TRACING=true / LANGSMITH_API_KEY are set
     (no-ops otherwise — see pipeline/langsmith_stats.py for the dashboard that
     reads these traces back).
+
+    Not wrapped in @trace_calls (unlike the other pipeline stages) — it's
+    already wrapped by @traceable above, and stacking a second decorator
+    risks interfering with LangSmith's argument introspection. This CALL
+    line + the existing "RETURN"-equivalent debug line further down cover
+    the same ground.
     """
+    tid = safe_ticket.get("ticket_id", "")
+    logger.debug(f"[{tid}] CALL run_llm_triage")
     api_key = os.getenv("OPENAI_API_KEY", "")
     if not api_key or api_key == "your_openai_key_here":
         logger.warning("OPENAI_API_KEY not set — returning ML verdict as LLM verdict")
@@ -91,6 +100,7 @@ def run_llm_triage(
             similar_incidents,
         )
 
+        call_t0 = time.perf_counter()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -101,6 +111,15 @@ def run_llm_triage(
             max_tokens=512,
             response_format={"type": "json_object"},
         )
+        call_ms = int((time.perf_counter() - call_t0) * 1000)
+
+        usage = response.usage
+        token_usage = {
+            "prompt_tokens": usage.prompt_tokens if usage else 0,
+            "completion_tokens": usage.completion_tokens if usage else 0,
+            "total_tokens": usage.total_tokens if usage else 0,
+        }
+        logger.debug(f"[{tid}] RETURN run_llm_triage model=gpt-4o-mini call_ms={call_ms} tokens={token_usage}")
 
         raw = response.choices[0].message.content or "{}"
         parsed = json.loads(raw)
@@ -113,13 +132,16 @@ def run_llm_triage(
             "reasoning": parsed.get("reasoning", "No reasoning provided."),
             "root_cause": parsed.get("root_cause", "Not determined from available data."),
             "contributing_factors": parsed.get("contributing_factors", []),
+            "model": "gpt-4o-mini",
+            "token_usage": token_usage,
+            "llm_call_ms": call_ms,
         }
 
     except json.JSONDecodeError as exc:
-        logger.exception("LLM returned invalid JSON")
+        logger.exception(f"[{tid}] RAISE run_llm_triage: LLM returned invalid JSON")
         return _fallback_from_ml(ml_result, reasoning="LLM returned malformed JSON.")
     except Exception as exc:
-        logger.exception("LLM call failed")
+        logger.exception(f"[{tid}] RAISE run_llm_triage: LLM call failed")
         return _fallback_from_ml(ml_result, reasoning=f"LLM unavailable: {exc}")
 
 

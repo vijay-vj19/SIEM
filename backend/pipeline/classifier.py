@@ -12,6 +12,7 @@ import numpy as np
 
 from models.ticket import TicketIn
 from data.mock_tickets import LABEL_NAMES
+from pipeline.call_trace import trace_calls
 
 logger = logging.getLogger(__name__)
 
@@ -137,10 +138,13 @@ def load_model(path: str | None = None) -> None:
         _model = None
 
 
+@trace_calls
 def predict(ticket: TicketIn) -> dict[str, Any]:
     """
     Run XGBoost prediction on a single ticket.
-    Returns dict with verdict (label string) and confidence (float).
+    Returns dict with verdict (label string), confidence (float), and — for
+    micro-level diagnostics — the full feature vector and probability
+    distribution across all classes.
     """
     if _model is None:
         logger.warning("XGBoost model not loaded — returning NEEDS_REVIEW fallback")
@@ -152,8 +156,17 @@ def predict(ticket: TicketIn) -> dict[str, Any]:
     confidence = float(proba[class_idx])
     verdict = LABEL_NAMES.get(class_idx, "NEEDS_REVIEW")
 
+    feature_values = dict(zip(FEATURE_NAMES, features[0].tolist()))
+    probabilities = {
+        LABEL_NAMES.get(i, str(i)): round(float(p), 4) for i, p in enumerate(proba)
+    }
+
+    logger.debug(f"[{ticket.ticket_id}] features={feature_values} probabilities={probabilities}")
+
     return {
         "verdict": verdict,
         "confidence": round(confidence, 4),
         "xgboost_score": round(confidence, 4),
+        "features": feature_values,
+        "probabilities": probabilities,
     }

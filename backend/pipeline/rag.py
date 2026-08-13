@@ -7,6 +7,8 @@ import logging
 import os
 from typing import Any
 
+from pipeline.call_trace import trace_calls
+
 logger = logging.getLogger(__name__)
 
 _index = None
@@ -85,14 +87,15 @@ def ticket_to_text(ticket: dict) -> str:
 # Retrieval
 # ---------------------------------------------------------------------------
 
-def retrieve_similar(ticket_text: str) -> list[dict[str, Any]]:
+@trace_calls
+def retrieve_similar(ticket_text: str, ticket_id: str = "") -> list[dict[str, Any]]:
     """
     Return top-3 similar past incidents.
     Falls back to empty list if RAG is unavailable.
     """
     if _retriever is None:
         logger.debug("RAG not available — returning empty similar incidents")
-        return _mock_similar_incidents(ticket_text)
+        return _mock_similar_incidents(ticket_text, ticket_id)
 
     try:
         nodes = _retriever.retrieve(ticket_text)
@@ -106,13 +109,14 @@ def retrieve_similar(ticket_text: str) -> list[dict[str, Any]]:
                     "verdict": meta.get("verdict", meta.get("label", "UNKNOWN")),
                 }
             )
+        logger.debug(f"[{ticket_id}] candidates={results}")
         return results
     except Exception as exc:
         logger.warning(f"RAG retrieval failed ({exc})")
         return []
 
 
-def _mock_similar_incidents(ticket_text: str) -> list[dict[str, Any]]:
+def _mock_similar_incidents(ticket_text: str, ticket_id: str = "") -> list[dict[str, Any]]:
     """
     Deterministic fallback when Supabase is not configured.
     Returns plausible similar incidents based on simple keyword matching.
@@ -145,4 +149,5 @@ def _mock_similar_incidents(ticket_text: str) -> list[dict[str, Any]]:
                     "verdict": t["label"],
                 }
             )
+    logger.debug(f"[{ticket_id}] candidates (keyword fallback)={results}")
     return results

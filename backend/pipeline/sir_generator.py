@@ -6,6 +6,7 @@ Uses the original (pre-Presidio) ticket values so analysts see real data.
 from datetime import datetime, timezone
 from typing import Any
 
+from pipeline.call_trace import trace_calls
 
 MITRE_DESCRIPTIONS = {
     "T1059": "Command and Scripting Interpreter",
@@ -32,6 +33,7 @@ VERDICT_ACTIONS = {
 }
 
 
+@trace_calls
 def generate_sir(
     ticket: dict[str, Any],
     llm_result: dict[str, Any],
